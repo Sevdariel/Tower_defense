@@ -6,7 +6,7 @@ unsigned int fieldVertexCount = 6;
 float fieldVertices[] =
 {
 	-1, 0, -1,
-	-1, 0, 1,
+	-1, 0,1,
 	1, 0, 1,
 	1, 0, -1
 };

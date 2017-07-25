@@ -9,6 +9,8 @@
 #include <iostream>
 #include <stdio.h>
 #include <cmath>
+#include <fstream>
+#include <string>
 #include "Field.h"
 
 using namespace glm;
@@ -21,6 +23,7 @@ void initializeGLUT(int* pargc, char **argv);
 void initializeGLEW();
 void specialKey(int key, int x, int y);
 void Keyboard(unsigned char key, int x, int y);
+void Field();
 
 //camera  definition
 struct Camera
@@ -30,8 +33,31 @@ struct Camera
 };
 Camera camera;
 //rotation speed
-const float rad = 1.5f;//0.75f/3;
+const float rad = 0.75f/3;
 float tmpX = 0, tmpY = 0, tmpZ = 0;
+int fieldTab[40][40];
+
+void Field()
+{
+	//std::ifstream field;
+
+	std::ifstream field("D:/Polibuda/Semestr IV/Grafika Komputerowa i wizualizacja/Tower_defense/GameData/Plansza/lvl1.txt");
+	if (field.good())
+		std::cout << "Plik lvl1.txt zostal otwarty poprawnie";
+	else
+		std::cout << "Nie udalo sie wczytac pliku";
+
+	std::string row;
+	for (int i = 0; i < 40; i++)
+		for (int j = 0; j < 40; j++)
+		{
+			field >> fieldTab[i][j];
+		}
+
+	
+
+	field.close();
+}
 
 //special keyboard keys
 void specialKey(int key, int x, int y)
@@ -39,27 +65,27 @@ void specialKey(int key, int x, int y)
 	//camera position change
 	if (key == GLUT_KEY_UP)
 	{
-		camera.posY += 1.0f;
-		camera.atY += 1.0f;
-		tmpY += 1.0f;
-	}
-	if (key == GLUT_KEY_DOWN)
-	{
 		camera.posY -= 1.0f;
 		camera.atY -= 1.0f;
 		tmpY -= 1.0f;
 	}
-	if (key == GLUT_KEY_LEFT)
+	if (key == GLUT_KEY_DOWN)
 	{
-		camera.posZ += 1.0f;
-		camera.atZ += 1.0f;
-		tmpZ += 1.0f;
+		camera.posY += 1.0f;
+		camera.atY += 1.0f;
+		tmpY += 1.0f;
 	}
-	if (key == GLUT_KEY_RIGHT)
+	if (key == GLUT_KEY_LEFT)
 	{
 		camera.posZ -= 1.0f;
 		camera.atZ -= 1.0f;
 		tmpZ -= 1.0f;
+	}
+	if (key == GLUT_KEY_RIGHT)
+	{
+		camera.posZ += 1.0f;
+		camera.atZ += 1.0f;
+		tmpZ += 1.0f;
 	}
 	nextFrame();
 }
@@ -137,6 +163,8 @@ void init()
 	camera.atX = 0.0f;
 	camera.atY = 0.0f;
 	camera.atZ = 0.0f;
+
+	Field();
 }
 
 //field creation vertices taken from "Field.h"
