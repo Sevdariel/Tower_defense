@@ -12,6 +12,7 @@
 #include <fstream>
 #include <string>
 #include "Field.h"
+#include "Camera.h"
 
 using namespace glm;
 
@@ -25,22 +26,12 @@ void specialKey(int key, int x, int y);
 void Keyboard(unsigned char key, int x, int y);
 void Field();
 
-//camera  definition
-struct Camera
-{
-	float posX, posY, posZ;
-	float atX, atY, atZ;
-};
 Camera camera;
-//rotation speed
-const float rad = 0.75f/3;
-float tmpX = 0, tmpY = 0, tmpZ = 0;
+
 int fieldTab[40][40];
 
 void Field()
 {
-	//std::ifstream field;
-
 	std::ifstream field("D:/Polibuda/Semestr IV/Grafika Komputerowa i wizualizacja/Tower_defense/GameData/Plansza/lvl1.txt");
 	if (field.good())
 		std::cout << "Plik lvl1.txt zostal otwarty poprawnie";
@@ -54,8 +45,6 @@ void Field()
 			field >> fieldTab[i][j];
 		}
 
-	
-
 	field.close();
 }
 
@@ -65,27 +54,19 @@ void specialKey(int key, int x, int y)
 	//camera position change
 	if (key == GLUT_KEY_UP)
 	{
-		camera.posY -= 1.0f;
-		camera.atY -= 1.0f;
-		tmpY -= 1.0f;
+		camera.cameraUp();
 	}
 	if (key == GLUT_KEY_DOWN)
 	{
-		camera.posY += 1.0f;
-		camera.atY += 1.0f;
-		tmpY += 1.0f;
+		camera.cameraDown();
 	}
 	if (key == GLUT_KEY_LEFT)
 	{
-		camera.posZ -= 1.0f;
-		camera.atZ -= 1.0f;
-		tmpZ -= 1.0f;
+		camera.cameraLeft();
 	}
 	if (key == GLUT_KEY_RIGHT)
 	{
-		camera.posZ += 1.0f;
-		camera.atZ += 1.0f;
-		tmpZ += 1.0f;
+		camera.cameraRight();
 	}
 	nextFrame();
 }
@@ -93,76 +74,21 @@ void specialKey(int key, int x, int y)
 //standard keyboard keys
 void Keyboard(unsigned char key, int x, int y)
 {
-	//left camera rotation
 	if (key == 'o' || key == 'O')
-	{
-		if (camera.posX <= 0 && camera.posX > -15.0f &&
-			camera.posZ >= -15.0f + tmpZ && camera.posZ < 0 + tmpZ)
-		{
-			camera.posX -= rad;
-			camera.posZ += rad;
-		}
-		else if (camera.posX >= -15.0f && camera.posX < 0 &&
-			camera.posZ >= 0 + tmpZ && camera.posZ < 15.0f + tmpZ)
-		{
-			camera.posX += rad;
-			camera.posZ += rad;
-		}
-		else if (camera.posX >= 0 && camera.posX < 15.0f &&
-			camera.posZ <= 15.0f + tmpZ && camera.posZ > 0 + tmpZ)
-		{
-			camera.posX += rad;
-			camera.posZ -= rad;
-		}
-		else if (camera.posX <= 15.0f && camera.posX > 0 &&
-			camera.posZ <= 0 + tmpZ && camera.posZ > -15.0f + tmpZ)
-		{
-			camera.posX -= rad;
-			camera.posZ -= rad;
-		}
-	}
-	//right camera rotation
+		camera.leftCameraRotation();
 	else if (key == 'p' || key == 'P')
-	{
-		if (camera.posX >= 0 && camera.posX < 15.0f &&
-			camera.posZ >= -15.0f + tmpZ && camera.posZ < 0 + tmpZ)
-		{
-			camera.posX += rad;
-			camera.posZ += rad;
-		}
-		else if (camera.posX <= 15.0f && camera.posX > 0 &&
-				 camera.posZ >= 0 + tmpZ && camera.posZ < 15.0f + tmpZ)
-		{
-			camera.posX -= rad;
-			camera.posZ += rad;
-		}
-		else if (camera.posX <= 0 && camera.posX > -15.0f &&
-				 camera.posZ <= 15.0f + tmpZ && camera.posZ > 0 + tmpZ)
-		{
-			camera.posX -= rad;
-			camera.posZ -= rad;
-		}
-		else if (camera.posX >= -15.0f && camera.posX < 0 &&
-				 camera.posZ <= 0 + tmpZ && camera.posZ > -15.0f + tmpZ)
-		{
-			camera.posX += rad;
-			camera.posZ -= rad;
-		}
-	}
+		camera.rightCameraRotation();
+
+	if (key == '-')
+		camera.cameraDistanceLonger();
+	else if (key == '+')
+		camera.cameraDistanceShorter();
 	nextFrame();
 }
 
 void init()
 {
 	glClearColor(0, 0, 0, 1);
-
-	//camera position initialize
-	camera.posX = 15.0f;
-	camera.posY = -20.0f;
-	camera.posZ = 0.0f;
-	camera.atX = 0.0f;
-	camera.atY = 0.0f;
-	camera.atZ = 0.0f;
 
 	Field();
 }
@@ -190,8 +116,8 @@ void displayFrame(void)
 
 	mat4 P = perspective(50.0f, 1.0f, 1.0f, 50.0f);
 
-	mat4 V = lookAt(vec3(camera.posX, camera.posY, camera.posZ),
-					vec3(camera.atX, camera.atY, camera.atZ),
+	mat4 V = lookAt(vec3(camera.getPosX(), camera.getPosY(), camera.getPosZ()),
+					vec3(camera.getAtX(), camera.getAtY(), camera.getAtZ()),
 					vec3(0.0f, 1.0f, 0.0f));
 
 	glMatrixMode(GL_PROJECTION);
@@ -212,7 +138,7 @@ void initializeGLUT(int* pargc, char **argv)
 {
 	glutInit(pargc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-	glutInitWindowPosition(300, 0);
+	glutInitWindowPosition(800, 0);
 	glutInitWindowSize(800, 800);
 	glutCreateWindow("Tower Defense");
 	glutDisplayFunc(displayFrame);
