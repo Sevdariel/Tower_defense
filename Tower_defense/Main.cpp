@@ -28,7 +28,7 @@ void Field();
 
 Camera camera;
 
-int fieldTab[40][40];
+int fieldTab[41][41];
 
 void Field()
 {
@@ -39,8 +39,8 @@ void Field()
 		std::cout << "Nie udalo sie wczytac pliku";
 
 	std::string row;
-	for (int i = 0; i < 40; i++)
-		for (int j = 0; j < 40; j++)
+	for (int i = 0; i < 41; i++)
+		for (int j = 0; j < 41; j++)
 		{
 			field >> fieldTab[i][j];
 		}
@@ -79,6 +79,9 @@ void Keyboard(unsigned char key, int x, int y)
 	else if (key == 'p' || key == 'P')
 		camera.rightCameraRotation();
 
+	if (key == 's' || key == 'S')
+		camera.startPos();
+	
 	/*if (key == '-')
 		camera.cameraDistanceLonger();
 	else if (key == '+')
