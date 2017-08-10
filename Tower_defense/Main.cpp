@@ -79,10 +79,10 @@ void Keyboard(unsigned char key, int x, int y)
 	else if (key == 'p' || key == 'P')
 		camera.rightCameraRotation();
 
-	if (key == '-')
+	/*if (key == '-')
 		camera.cameraDistanceLonger();
 	else if (key == '+')
-		camera.cameraDistanceShorter();
+		camera.cameraDistanceShorter();*/
 	nextFrame();
 }
 

@@ -3,133 +3,130 @@
 
 Camera::Camera()
 {
-	posX = 0.0f;
-	posY = 20.0f;
-	posZ = 15.0f;
-	atX = 0.0f;
-	atY = 0.0f;
-	atZ = 0.0f;
+	startPos();
 }
 
 void Camera::leftCameraRotation()
 {
-	if (posX <= 0 + tmpX && posX > -15.0f + tmpX &&
-		posZ >= -15.0f + tmpZ && posZ < 0 + tmpZ)
+	//I quarter
+	if (posX >= 0 + tmpX && posX < 15.0f + tmpX &&
+		posZ >= -15.0f + tmpZ && posZ < 0 + tmpZ )
 	{
-		posX -= rad;
+		posX += rad;
 		posZ += rad;
 	}
+	//II quarter
 	else if (posX >= -15.0f + tmpX && posX < 0 + tmpX &&
+		posZ > -15.0f + tmpZ && posZ <= 0 + tmpZ )
+	{
+		posX += rad;
+		posZ -= rad;
+	}
+	//III quarter
+	else if (posX > -15.0f + tmpX && posX <= 0 + tmpX &&
+		posZ > 0 + tmpZ && posZ <= 15.0f + tmpZ)
+	{
+		posX -= rad;
+		posZ -= rad;
+	}
+	//IV quarter
+	else if (posX > 0 + tmpX && posX <= 15.0f + tmpX &&
 		posZ >= 0 + tmpZ && posZ < 15.0f + tmpZ)
 	{
-		posX += rad;
+		posX -= rad;
 		posZ += rad;
 	}
-	else if (posX >= 0 + tmpX && posX < 15.0f + tmpX &&
-		posZ <= 15.0f + tmpZ && posZ > 0 + tmpZ)
-	{
-		posX += rad;
-		posZ -= rad;
-	}
-	else if (posX <= 15.0f + tmpX && posX > 0 + tmpX &&
-		posZ <= 0 + tmpZ && posZ > -15.0f + tmpZ)
-	{
-		posX -= rad;
-		posZ -= rad;
-	}
-
-	std::cout << "camera.posX = " << posX << std::endl;
-	std::cout << "camera.posZ = " << posZ << std::endl;
 }
 
 void Camera::rightCameraRotation()
 {
-	if (posX >= 0 + tmpX && posX < 15.0f + tmpX &&
+	//I quarter
+	if (posX > 0 + tmpX && posX <= 15.0f + tmpX &&
+		posZ > -15.0f + tmpZ && posZ <= 0 + tmpZ)
+	{
+		posX -= rad;
+		posZ -= rad;
+	}
+	//II quarter
+	else if (posX > -15.0f + tmpX && posX <= 0 + tmpX &&
 		posZ >= -15.0f + tmpZ && posZ < 0 + tmpZ)
 	{
-		posX += rad;
+		posX -= rad;
 		posZ += rad;
 	}
-	else if (posX <= 15.0f + tmpX && posX > 0 + tmpX &&
+	//III quarter
+	else if (posX >= -15.0f + tmpX && posX < 0 + tmpX &&
 		posZ >= 0 + tmpZ && posZ < 15.0f + tmpZ)
 	{
-		posX -= rad;
+		posX += rad;
 		posZ += rad;
 	}
-	else if (posX <= 0 + tmpX && posX > -15.0f + tmpX &&
-		posZ <= 15.0f + tmpZ && posZ > 0 + tmpZ)
-	{
-		posX -= rad;
-		posZ -= rad;
-	}
-	else if (posX >= -15.0f + tmpX && posX < 0 + tmpX &&
-		posZ <= 0 + tmpZ && posZ > -15.0f + tmpZ)
+	//IV quarter
+	else if (posX >= 0 + tmpX && posX < 15.0f + tmpX &&
+		posZ > 0 + tmpZ && posZ <= 15.0f + tmpZ)
 	{
 		posX += rad;
 		posZ -= rad;
 	}
-
-	std::cout << "camera.posX = " << posX << std::endl;
-	std::cout << "camera.posZ = " <<posZ << std::endl;
 }
 
 void Camera::cameraDistanceLonger()
 {
 	if (posX == 0 && posZ - atZ < 0)
 	{
-		posY += to;
-		posZ -= to;
-		tmpZ -= to;
+		posY += rad;
+		posZ -= rad;
+		tmpZ -= rad;
 	}
 	else if (posX == 0 && posZ - atZ > 0)
 	{
-		posY += to;
-		posZ += to;
-		tmpZ += to;
+		posY += rad;
+		posZ += rad;
+		tmpZ += rad;
 	}
 	else if (posZ == 0 && posX - atX < 0)
 	{
-		posY += to;
-		posX -= to;
-		tmpX -= to;
+		posY += rad;
+		posX -= rad;
+		tmpX -= rad;
 	}
 	else if (posZ == 0 && posX - atX > 0)
 	{
-		posY += to;
-		posX += to;
-		tmpX += to;
+		posY += rad;
+		posX += rad;
+		tmpX += rad;
 	}
 	else if (posZ - atZ < 0 && posX - atX < 0)
 	{
-		posX -= to;
-		posY += to;
-		posZ -= to;
-		tmpZ -= to;
-		tmpX -= to;
+		posX -= rad;
+		posY += rad;
+		posZ -= rad;
+		tmpZ -= rad;
+		tmpX -= rad;
 	}
 	else if (posZ - atZ > 0 && posX - atX < 0)
 	{
-		posX -= to;
-		posY += to;
-		posZ += to;
-		tmpZ += to;
-		tmpX -= to;
+		posX -= rad;
+		posY += rad;
+		posZ += rad;
+		tmpZ += rad;
+		tmpX -= rad;
 	}
 	else if (posZ - atZ < 0 && posX - atX > 0)
 	{
-		posX += to;
-		posY += to;
-		posZ -= to;
-		tmpZ -= to;
-		tmpX += to;
+		posX += rad;
+		posY += rad;
+		posZ -= rad;
+		tmpZ -= rad;
+		tmpX += rad;
 	}
 	else if (posZ - atZ > 0 && posX - atX > 0)
 	{
-		posX += to;
-		posY += to;
-		posZ += to;
-		tmpZ += to;
-		tmpX += to;
+		posX += rad;
+		posY += rad;
+		posZ += rad;
+		tmpZ += rad;
+		tmpX += rad;
 	}
 
 	std::cout << "camera.posX = " << posX << std::endl;
@@ -142,59 +139,59 @@ void Camera::cameraDistanceShorter()
 {
 	if (posX == 0 && posZ - atZ < 0)
 	{
-		posY -= to;
-		posZ += to;
-		tmpZ += to;
+		posY -= rad;
+		posZ += rad;
+		tmpZ += rad;
 	}
 	else if (posX == 0 && posZ - atZ > 0)
 	{
-		posY -= to;
-		posZ -= to;
-		tmpZ -= to;
+		posY -= rad;
+		posZ -= rad;
+		tmpZ -= rad;
 	}
 	else if (posZ == 0 && posX - atX < 0)
 	{
-		posY -= to;
-		posX += to;
-		tmpX += to;
+		posY -= rad;
+		posX += rad;
+		tmpX += rad;
 	}
 	else if (posZ == 0 && posX - atX > 0)
 	{
-		posY -= to;
-		posX -= to;
-		tmpX -= to;
+		posY -= rad;
+		posX -= rad;
+		tmpX -= rad;
 	}
 	else if (posZ - atZ < 0 && posX - atX < 0)
 	{
-		posX += to;
-		posY -= to;
-		posZ += to;
-		tmpZ += to;
-		tmpX += to;
+		posX += rad;
+		posY -= rad;
+		posZ += rad;
+		tmpZ += rad;
+		tmpX += rad;
 	}
 	else if (posZ - atZ > 0 && posX - atX < 0)
 	{
-		posX += to;
-		posY -= to;
-		posZ -= to;
-		tmpZ -= to;
-		tmpX += to;
+		posX += rad;
+		posY -= rad;
+		posZ -= rad;
+		tmpZ -= rad;
+		tmpX += rad;
 	}
 	else if (posZ - atZ < 0 && posX - atX > 0)
 	{
-		posX -= to;
-		posY -= to;
-		posZ += to;
-		tmpZ += to;
-		tmpX -= to;
+		posX -= rad;
+		posY -= rad;
+		posZ += rad;
+		tmpZ += rad;
+		tmpX -= rad;
 	}
 	else if (posZ - atZ > 0 && posX - atX > 0)
 	{
-		posX -= to;
-		posY -= to;
-		posZ -= to;
-		tmpZ -= to;
-		tmpX -= to;
+		posX -= rad;
+		posY -= rad;
+		posZ -= rad;
+		tmpZ -= rad;
+		tmpX -= rad;
 	}
 	std::cout << "camera.posX = " << posX << std::endl;
 	std::cout << "camera.posZ = " << posZ << std::endl;
@@ -204,30 +201,30 @@ void Camera::cameraDistanceShorter()
 
 void Camera::cameraUp()
 {
-	posY += to;
-	atY += to;
-	tmpY -= to;
+	posZ += rad;
+	atZ += rad;
+	tmpZ += rad;
 }
 
 void Camera::cameraDown()
 {
-	posY -= to;
-	atY -= to;
-	tmpY += to;
+	posZ -= rad;
+	atZ -= rad;
+	tmpZ -= rad;
 }
 
 void Camera::cameraLeft()
 {
-	posX -= to;
-	atX -= to;
-	tmpX -= to;
+	posX += rad;
+	atX += rad;
+	tmpX += rad;
 }
 
 void Camera::cameraRight()
 {
-	posX += to;
-	atX += to;
-	tmpX += to;
+	posX -= rad;
+	atX -= rad;
+	tmpX -= rad;
 }
 
 float Camera::getAtX()
@@ -258,4 +255,23 @@ float Camera::getPosY()
 float Camera::getPosZ()
 {
 	return posZ;
+}
+
+void Camera::startPos()
+{
+	posX = startX;
+	posY = startY;
+	posZ = startZ;
+	atX = startAtX;
+	atY = startAtY;
+	atZ = startAtZ;
+}
+
+void Camera::check()
+{
+	std::cout << "camera.posX = " << posX << std::endl;
+	std::cout << "camera.posZ = " << posZ << std::endl;
+	std::cout << "camera.tmpX = " << tmpX << std::endl;
+	std::cout << "camera.tmpZ = " << tmpZ << std::endl;
+	std::cout << std::endl;
 }
