@@ -11,8 +11,10 @@
 #include <cmath>
 #include <fstream>
 #include <string>
+#include <vector>
 #include "Field.h"
 #include "Camera.h"
+#include "lodepng.h"
 
 using namespace glm;
 
@@ -25,11 +27,15 @@ void initializeGLEW();
 void specialKey(int key, int x, int y);
 void Keyboard(unsigned char key, int x, int y);
 void Field();
+void loadImage();
+
+GLuint fieldTex;
 
 Camera camera;
 
 int fieldTab[41][41];
 
+//field array
 void Field()
 {
 	std::ifstream field("D:/Polibuda/Semestr IV/Grafika Komputerowa i wizualizacja/Tower_defense/GameData/Plansza/lvl1.txt");
@@ -92,21 +98,44 @@ void Keyboard(unsigned char key, int x, int y)
 void init()
 {
 	glClearColor(0, 0, 0, 1);
-
+	glEnable(GL_TEXTURE_2D);
+	
+	loadImage();
 	Field();
+
+}
+//load image to graphic card memory
+void loadImage()
+{
+
+	std::vector<unsigned char> image;
+	unsigned width, height;
+	unsigned error = lodepng::decode(image, width, height, "D:/Polibuda/Semestr IV/Grafika Komputerowa i wizualizacja/Tower_defense/GameData/Plansza/fieldTexture.png");
+
+	glGenTextures(1, &fieldTex);
+	glBindTexture(GL_TEXTURE_2D, fieldTex);
+	glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*) image.data());
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
-//field creation vertices taken from "Field.h"
+//field creation vertices taken from "Field.h" add textures to field
 void createField(mat4 V)
 {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixf(glm::value_ptr(V));
 
+	glBindTexture(GL_TEXTURE_2D, fieldTex);
+
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, fieldVertices);
 	glColorPointer(3, GL_FLOAT, 0, fieldColors);
+	glTexCoordPointer(2, GL_FLOAT, 0, fieldTextureCoords);
 	glDrawArrays(GL_QUADS, 0, fieldVertexCount);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
@@ -160,6 +189,11 @@ void initializeGLEW()
 	}
 	fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 }
+//delete unnecessary things
+void deleteThings()
+{
+	glDeleteTextures(1, &fieldTex);
+}
 
 int main(int argc, char** argv)
 {
@@ -169,5 +203,6 @@ int main(int argc, char** argv)
 
 	glutMainLoop();
 
+	deleteThings();
 	return 0;
 }
