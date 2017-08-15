@@ -1,14 +1,19 @@
 #ifndef FIELD_H
 #define FIELD_H
 
-unsigned int fieldVertexCount = 6;
+unsigned int fieldVertexCount = 4;
 
 float fieldVertices[] =
 {
-	-20, 0, -20,
-	-20, 0, 20,
-	20, 0, 20,
-	20, 0, -20
+	-20, 0, -21,
+	-20, 0, 21,
+	20, 0, 21,
+	20, 0, -21
+
+	/*-1, 0, -1,
+	-1, 0, 1,
+	1, 0, 1,
+	1, 0, -1*/
 };
 
 float fieldColors[] =
@@ -21,10 +26,10 @@ float fieldColors[] =
 
 float fieldTextureCoords[] =
 {
-	1, 1,
 	1, 0,
-	0, 0,
-	0, 1
+	1, 1,
+	0, 1,
+	0, 0
 };
 
 #endif

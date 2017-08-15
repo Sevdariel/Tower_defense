@@ -6,64 +6,64 @@ Camera::Camera()
 	startPos();
 }
 
-void Camera::leftCameraRotation()
+void Camera::rightCameraRotation()
 {
 	//I quarter
-	if (posX >= 0 + tmpX && posX < 15.0f + tmpX &&
-		posZ >= -15.0f + tmpZ && posZ < 0 + tmpZ )
+	if (posX >= 0 + tmpX && posX < 25.0f + tmpX &&
+		posZ >= -25.0f + tmpZ && posZ < 0 + tmpZ )
 	{
 		posX += rad;
 		posZ += rad;
 	}
 	//II quarter
-	else if (posX >= -15.0f + tmpX && posX < 0 + tmpX &&
-		posZ > -15.0f + tmpZ && posZ <= 0 + tmpZ )
+	else if (posX >= -25.0f + tmpX && posX < 0 + tmpX &&
+		posZ > -25.0f + tmpZ && posZ <= 0 + tmpZ )
 	{
 		posX += rad;
 		posZ -= rad;
 	}
 	//III quarter
-	else if (posX > -15.0f + tmpX && posX <= 0 + tmpX &&
-		posZ > 0 + tmpZ && posZ <= 15.0f + tmpZ)
+	else if (posX > -25.0f + tmpX && posX <= 0 + tmpX &&
+		posZ > 0 + tmpZ && posZ <= 25.0f + tmpZ)
 	{
 		posX -= rad;
 		posZ -= rad;
 	}
 	//IV quarter
-	else if (posX > 0 + tmpX && posX <= 15.0f + tmpX &&
-		posZ >= 0 + tmpZ && posZ < 15.0f + tmpZ)
+	else if (posX > 0 + tmpX && posX <= 25.0f + tmpX &&
+		posZ >= 0 + tmpZ && posZ < 25.0f + tmpZ)
 	{
 		posX -= rad;
 		posZ += rad;
 	}
 }
 
-void Camera::rightCameraRotation()
+void Camera::leftCameraRotation()
 {
 	//I quarter
-	if (posX > 0 + tmpX && posX <= 15.0f + tmpX &&
-		posZ > -15.0f + tmpZ && posZ <= 0 + tmpZ)
+	if (posX > 0 + tmpX && posX <= 25.0f + tmpX &&
+		posZ > -25.0f + tmpZ && posZ <= 0 + tmpZ)
 	{
 		posX -= rad;
 		posZ -= rad;
 	}
 	//II quarter
-	else if (posX > -15.0f + tmpX && posX <= 0 + tmpX &&
-		posZ >= -15.0f + tmpZ && posZ < 0 + tmpZ)
+	else if (posX > -25.0f + tmpX && posX <= 0 + tmpX &&
+		posZ >= -25.0f + tmpZ && posZ < 0 + tmpZ)
 	{
 		posX -= rad;
 		posZ += rad;
 	}
 	//III quarter
-	else if (posX >= -15.0f + tmpX && posX < 0 + tmpX &&
-		posZ >= 0 + tmpZ && posZ < 15.0f + tmpZ)
+	else if (posX >= -25.0f + tmpX && posX < 0 + tmpX &&
+		posZ >= 0 + tmpZ && posZ < 25.0f + tmpZ)
 	{
 		posX += rad;
 		posZ += rad;
 	}
 	//IV quarter
-	else if (posX >= 0 + tmpX && posX < 15.0f + tmpX &&
-		posZ > 0 + tmpZ && posZ <= 15.0f + tmpZ)
+	else if (posX >= 0 + tmpX && posX < 25.0f + tmpX &&
+		posZ > 0 + tmpZ && posZ <= 25.0f + tmpZ)
 	{
 		posX += rad;
 		posZ -= rad;
@@ -201,16 +201,16 @@ void Camera::cameraDistanceShorter()
 
 void Camera::cameraUp()
 {
-	posZ += rad;
-	atZ += rad;
-	tmpZ += rad;
+	posZ -= rad;
+	atZ -= rad;
+	tmpZ -= rad;
 }
 
 void Camera::cameraDown()
 {
-	posZ -= rad;
-	atZ -= rad;
-	tmpZ -= rad;
+	posZ += rad;
+	atZ += rad;
+	tmpZ += rad;
 }
 
 void Camera::cameraLeft()
