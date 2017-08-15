@@ -33,13 +33,14 @@ void game();
 void menu();
 void gameOver();
 void createMob(mat4 V, mat4 M);
+void deleteMob();
 
 GLuint fieldTex;
 enum GameState { MENU, GAME, GAME_OVER};
 int windowWidth = 800, windowHeight = 800;
 int mobCount = 0, mobMaxCount = 30;
 std::vector<NormalMob> mobAlive;
-int count = 0;
+int maxMobAlive = 30, deathMobCount = 0;;
 
 GameState gamestate;
 Camera camera;
@@ -163,35 +164,15 @@ void createField(mat4 V)
 //Display function
 void displayFrame()
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	mat4 P = perspective(50.0f, 1.0f, 1.0f, 50.0f);
-
-	mat4 V = lookAt(vec3(camera.getPosX(), camera.getPosY(), camera.getPosZ()),
-		vec3(camera.getAtX(), camera.getAtY(), camera.getAtZ()),
-		vec3(0.0f, 1.0f, 0.0f));
-
-	mat4 M = mat4(1.0f);
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadMatrixf(value_ptr(P));
-
-	createField(V);
-
-	if (mobAlive.size() != 1)
-		createMob(V, M);
-	else
-		//mobAlive[0].startDrawMob(V, M);
-		mobAlive[0].drawMob(V, M, fieldTab);
-
-	/*if (gamestate == MENU)
+	if (gamestate == MENU)
 		menu();
 	else if (gamestate == GAME)
 		game();
 	else if (gamestate == GAME_OVER)
-		gameOver();*/
+		gameOver();
 	
 	glutSwapBuffers();
+	Sleep(20);
 }
 
 //Redisplay function
@@ -228,19 +209,31 @@ void game()
 
 	createField(V);
 
-	if (mobAlive.size() != 1)
+	if (mobAlive.size() != maxMobAlive + deathMobCount && mobAlive.size() == 0)
 		createMob(V, M);
-	else
-		//mobAlive[0].startDrawMob(V, M);
-		mobAlive[0].drawMob(V, M, fieldTab);
+	else if (mobAlive.size() != maxMobAlive && mobAlive.back().getTabPosX() != 0)
+		createMob(V, M);
 	
+	deleteMob();
+
+	if (mobAlive.size() > 0)
+		for (int i = 0; i < mobAlive.size(); i++)
+			mobAlive[i].drawMob(V, M, fieldTab);
 }
 
 void createMob(mat4 V, mat4 M)
 {
-	//normalMob = new NormalMob(V, M, fieldTab);
 	mobAlive.push_back(NormalMob(V, M, fieldTab));
-	std::cout << mobAlive.size() << std::endl;
+}
+
+void deleteMob()
+{
+	for (int i = 0; i < mobAlive.size(); i++)
+		if (mobAlive[i].getTabPosX() == 20 || mobAlive[i].getTabPosZ() == 20)
+		{
+			mobAlive.erase(mobAlive.begin() + i);
+			deathMobCount++;
+		}
 }
 
 void initializeGLUT(int* pargc, char **argv)
