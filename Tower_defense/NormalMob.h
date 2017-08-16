@@ -33,6 +33,8 @@ class NormalMob
 		int getTabPosX();
 		int getTabPosZ();
 		~NormalMob();
+
+		bool buildPhase = false;
 };
 
 #endif

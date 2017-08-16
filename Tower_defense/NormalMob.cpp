@@ -27,6 +27,7 @@ void NormalMob::drawMob(glm::mat4 V, glm::mat4 M, int fieldTab[21][21])
 		glMatrixMode(GL_MODELVIEW);
 		M = translate(M, vec3(posX, posY, posZ));
 		M = scale(M, vec3(0.5f, 0.5f, 0.5f));
+		checkRoute(fieldTab);
 	}
 	else 
 	{
@@ -85,7 +86,9 @@ void NormalMob::getStartingPos(int fieldTab[21][21])
 
 void NormalMob::checkRoute(int fieldTab[21][21])
 {
-	if (posX == 20 || tabPosX == 0)
+	if (tabPosX == 21 || buildPhase == true)
+		direction = STOP;
+	else if (tabPosX == 0)
 	{
 		if (fieldTab[tabPosZ][tabPosX + 1] == 2 && prevDirection != LEFT)
 			direction = RIGHT;
@@ -94,7 +97,7 @@ void NormalMob::checkRoute(int fieldTab[21][21])
 		else if (fieldTab[tabPosZ + 1][tabPosX] == 2 && prevDirection != UP)
 			direction = DOWN;
 	}
-	else if (posX != 20 && tabPosX != 0)
+	else
 	{
 		if (fieldTab[tabPosZ][tabPosX + 1] == 2 && prevDirection != LEFT)
 			direction = RIGHT;
@@ -105,8 +108,8 @@ void NormalMob::checkRoute(int fieldTab[21][21])
 		else if (fieldTab[tabPosZ + 1][tabPosX] == 2 && prevDirection != UP)
 			direction = DOWN;
 	}
-	else if (tabPosX == 20)
-		direction = STOP;
+	//else if (tabPosX == 20 || buildPhase == true)
+		//direction = STOP;
 
 }
 

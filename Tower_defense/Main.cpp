@@ -21,7 +21,7 @@ using namespace glm;
 
 void init();
 void createField(mat4 V);
-void displayFrame(void);
+void displayFrame();
 void nextFrame();
 void initializeGLUT(int* pargc, char **argv);
 void initializeGLEW();
@@ -34,15 +34,21 @@ void menu();
 void gameOver();
 void createMob(mat4 V, mat4 M);
 void deleteMob();
+void MVP();
+void drawMobOnField();
+void changeLookAt();
 
 GLuint fieldTex;
+mat4 P, V, M;
 enum GameState { MENU, GAME, GAME_OVER};
+enum GamePhase { BUILD, MINION};
 int windowWidth = 800, windowHeight = 800;
 int mobCount = 0, mobMaxCount = 30;
 std::vector<NormalMob> mobAlive;
 int maxMobAlive = 30, deathMobCount = 0;;
 
 GameState gamestate;
+GamePhase gamephase = MINION;
 Camera camera;
 NormalMob *normalMob;
 
@@ -64,14 +70,6 @@ void Field()
 			field >> fieldTab[i][j];
 		}
 
-	/*for (int i = 0; i < 21; i++)
-	{
-		for (int j = 0; j < 21; j++)
-		{
-			std::cout << fieldTab[i][j] << " ";
-		}
-		std::cout << std::endl;
-	}*/
 	field.close();
 }
 
@@ -109,6 +107,16 @@ void Keyboard(unsigned char key, int x, int y)
 	if (key == 's' || key == 'S')
 		camera.startPos();
 
+	if (key == 'b' || key == 'B')
+	{
+		gamephase = BUILD;
+		changeLookAt();
+	}
+	else if (key == 'm' || key == 'M')
+	{
+		gamephase = MINION;
+		changeLookAt();
+	}
 	//quit when pushing esc button
 	if (key == 27)
 		exit(1);
@@ -195,27 +203,77 @@ void gameOver()
 void game()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	switch (gamephase)
+	{
+		case MINION:
+		{
+			MVP();
+			
+			glMatrixMode(GL_PROJECTION);
+			glLoadMatrixf(value_ptr(P));
 
-	mat4 P = perspective(50.0f, 1.0f, 1.0f, 50.0f);
+			createField(V);
 
-	mat4 V = lookAt(vec3(camera.getPosX(), camera.getPosY(), camera.getPosZ()),
-		vec3(camera.getAtX(), camera.getAtY(), camera.getAtZ()),
-		vec3(0.0f, 1.0f, 0.0f));
+			for (int i = 0; i < mobAlive.size(); i++)
+				mobAlive[i].buildPhase = false;
 
-	mat4 M = mat4(1.0f);
+			if (mobAlive.size() != maxMobAlive + deathMobCount && mobAlive.size() == 0)
+				createMob(V, M);
+			else if (mobAlive.size() != maxMobAlive && mobAlive.back().getTabPosX() != 0)
+				createMob(V, M);
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadMatrixf(value_ptr(P));
+			deleteMob();
 
-	createField(V);
+			drawMobOnField();
+			break;
+		}
+		case BUILD:
+		{
+			MVP();
+			
+			glMatrixMode(GL_PROJECTION);
+			glLoadMatrixf(value_ptr(P));
+			createField(V);
 
-	if (mobAlive.size() != maxMobAlive + deathMobCount && mobAlive.size() == 0)
-		createMob(V, M);
-	else if (mobAlive.size() != maxMobAlive && mobAlive.back().getTabPosX() != 0)
-		createMob(V, M);
+			for (int i = 0; i < mobAlive.size(); i++)
+				mobAlive[i].buildPhase = true;
+
+			drawMobOnField();
+			break;
+		}
+	}
+}
+
+void MVP()
+{
+	if (gamephase == MINION)
+		P = perspective(50.0f, 1.0f, 1.0f, 50.0f);
+	else if (gamephase == BUILD)
+		P = perspective(51.0f, 1.0f, 1.0f, 50.0f);
 	
-	deleteMob();
+	V = lookAt(vec3(camera.getPosX(), camera.getPosY(), camera.getPosZ()),
+		vec3(camera.getAtX(), camera.getAtY(), camera.getAtZ()),
+		vec3(camera.getNoseX(), camera.getNoseY(), camera.getNoseZ ()));
+	M = mat4(1.0f);
+}
 
+void changeLookAt()
+{
+	if (gamephase == MINION)
+	{
+		camera.buildPhase = false;
+		camera.changeCameraLookAt();
+		
+	}
+	else if (gamephase == BUILD)
+	{
+		camera.buildPhase = true;
+		camera.changeCameraLookAt();
+		
+	}
+}
+void drawMobOnField()
+{
 	if (mobAlive.size() > 0)
 		for (int i = 0; i < mobAlive.size(); i++)
 			mobAlive[i].drawMob(V, M, fieldTab);

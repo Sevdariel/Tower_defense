@@ -237,6 +237,21 @@ float Camera::getAtY()
 	return atY;
 }
 
+float Camera::getNoseX()
+{
+	return noseX;
+}
+
+float Camera::getNoseY()
+{
+	return noseY;
+}
+
+float Camera::getNoseZ()
+{
+	return noseZ;
+}
+
 float Camera::getAtZ()
 {
 	return atZ;
@@ -265,6 +280,9 @@ void Camera::startPos()
 	atX = startAtX;
 	atY = startAtY;
 	atZ = startAtZ;
+	noseX = startNoseX;
+	noseY = startNoseY;
+	noseZ = startNoseZ;
 }
 
 void Camera::check()
@@ -274,4 +292,24 @@ void Camera::check()
 	std::cout << "camera.tmpX = " << tmpX << std::endl;
 	std::cout << "camera.tmpZ = " << tmpZ << std::endl;
 	std::cout << std::endl;
+}
+
+void Camera::changeCameraLookAt()
+{
+	if (buildPhase == true)
+	{
+		posX = 0.0f;
+		posY = -50.0f;
+		posZ = 0.0f;
+		atX = 0.0f;
+		atY = 0.0f;
+		atZ = 0.0f;
+		noseX = 0.0f;
+		noseY = 0.0f;
+		noseZ = -1.0f;
+	}
+	else
+	{
+		startPos();
+	}
 }

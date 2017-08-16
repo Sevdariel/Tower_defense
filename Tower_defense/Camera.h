@@ -7,8 +7,10 @@ class Camera
 		//const float startX = 0.0f, startY = -20.0f, startZ = 25.0f;			//camera starting position
 		const float startX = 0.0f, startY = -20.0f, startZ = 25.0f;			//camera starting position
 		const float startAtX = 0.0f, startAtY = 0.0f , startAtZ = 0.0f;		//camera looking at starting position
+		const float startNoseX = 0.0f, startNoseY = 1.0f, startNoseZ = 0.0f;
 		float posX, posY, posZ;												//camera position
 		float atX, atY, atZ;												//camera looking at
+		float noseX, noseY, noseZ;
 		const float rad = 0.25f;											//rotation degree and translation distance
 		float tmpX = 0.0f, tmpY = 0.0f, tmpZ = 0.0f;						//temporary values needed to correct rotation
 
@@ -28,8 +30,15 @@ class Camera
 		float getAtX();									//returning atX
 		float getAtZ();									//returning atZ
 		float getAtY();									//returning atY
+		float getNoseX();
+		float getNoseY();
+		float getNoseZ();
 		void startPos();								//assign starting camera position values
 		void check();									//checking position values
+		void changeCameraLookAt();
+		
+
+		bool buildPhase;
 };
 
 #endif
