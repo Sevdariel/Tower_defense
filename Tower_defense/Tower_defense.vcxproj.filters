@@ -24,6 +24,9 @@
     <ClCompile Include="NormalMob.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FirstTurret.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="D:\Polibuda\Semestr IV\Grafika komputerowa i wizualizacja\Tower_defense\Tower_defense\..\..\lib\native\src\lodepng.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -41,7 +44,10 @@
     <ClInclude Include="NormalMob.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MobCube.h">
+    <ClInclude Include="FirstTurret.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MobVertices.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

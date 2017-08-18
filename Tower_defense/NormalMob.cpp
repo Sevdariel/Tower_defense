@@ -1,5 +1,5 @@
 #include "NormalMob.h"
-#include "MobCube.h"
+#include "MobVertices.h"
 
 using namespace glm;
 
@@ -108,9 +108,6 @@ void NormalMob::checkRoute(int fieldTab[21][21])
 		else if (fieldTab[tabPosZ + 1][tabPosX] == 2 && prevDirection != UP)
 			direction = DOWN;
 	}
-	//else if (tabPosX == 20 || buildPhase == true)
-		//direction = STOP;
-
 }
 
 void NormalMob::move(int fieldTab[21][21])

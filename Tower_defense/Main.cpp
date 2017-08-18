@@ -16,6 +16,7 @@
 #include "Camera.h"
 #include "lodepng.h"
 #include "NormalMob.h"
+#include "FirstTurret.h"
 
 using namespace glm;
 
@@ -26,8 +27,9 @@ void nextFrame();
 void initializeGLUT(int* pargc, char **argv);
 void initializeGLEW();
 void specialKey(int key, int x, int y);
-void Keyboard(unsigned char key, int x, int y);
-void Field();
+void keyboard(unsigned char key, int x, int y);
+void mouse(int button, int state, int x, int y);
+void field();
 void loadImage();
 void game();
 void menu();
@@ -37,25 +39,31 @@ void deleteMob();
 void MVP();
 void drawMobOnField();
 void changeLookAt();
+void ghostBuild(mat4 V, mat4 M);
+void changeGhostPosition();
 
-GLuint fieldTex;
+GLuint minionFieldTex, buildFieldTex;
 mat4 P, V, M;
 enum GameState { MENU, GAME, GAME_OVER};
 enum GamePhase { BUILD, MINION};
+enum BuildPhase { GHOST, SOLID};
 int windowWidth = 800, windowHeight = 800;
 int mobCount = 0, mobMaxCount = 30;
 std::vector<NormalMob> mobAlive;
-int maxMobAlive = 30, deathMobCount = 0;;
+std::vector<FirstTurret> turret;
+int maxMobAlive = 30, deathMobCount = 0;
+float mouseX, mouseY;
 
 GameState gamestate;
 GamePhase gamephase = MINION;
+BuildPhase buildphase;
 Camera camera;
 NormalMob *normalMob;
 
 int fieldTab[21][21];
 
 //field array
-void Field()
+void field()
 {
 	std::ifstream field("D:/Polibuda/Semestr IV/Grafika Komputerowa i wizualizacja/Tower_defense/GameData/Plansza/lvl1.txt");
 	if (field.good())
@@ -97,7 +105,7 @@ void specialKey(int key, int x, int y)
 }
 
 //standard keyboard keys
-void Keyboard(unsigned char key, int x, int y)
+void keyboard(unsigned char key, int x, int y)
 {
 	if (key == 'o' || key == 'O')
 		camera.leftCameraRotation();
@@ -117,6 +125,9 @@ void Keyboard(unsigned char key, int x, int y)
 		gamephase = MINION;
 		changeLookAt();
 	}
+
+	if (gamephase == BUILD && (key == 'f' || key == 'F'))
+		buildphase = GHOST;
 	//quit when pushing esc button
 	if (key == 27)
 		exit(1);
@@ -124,13 +135,22 @@ void Keyboard(unsigned char key, int x, int y)
 	nextFrame();
 }
 
+void mouse(int button, int state, int x, int y)
+{
+	mouseX = x;
+	mouseY = y;
+}
+
 void init()
 {
 	glClearColor(0, 0, 0, 1);
 	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_BLEND);
+
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	loadImage();
-	Field();
+	field();
 
 	gamestate = GAME;		//menu isnt create 
 }
@@ -140,9 +160,12 @@ void loadImage()
 	std::vector<unsigned char> image;
 	unsigned width, height;
 	unsigned error = lodepng::decode(image, width, height, "D:/Polibuda/Semestr IV/Grafika Komputerowa i wizualizacja/Tower_defense/GameData/Plansza/fieldTexture.png");
-
-	glGenTextures(1, &fieldTex);
-	glBindTexture(GL_TEXTURE_2D, fieldTex);
+	if (!error)
+		std::cout << "Minion map texture loaded properly\n";
+	else
+		std::cout << "Minion map texture didnt loaded\n";
+	glGenTextures(1, &minionFieldTex);
+	glBindTexture(GL_TEXTURE_2D, minionFieldTex);
 	glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*) image.data());
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -155,7 +178,10 @@ void createField(mat4 V)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixf(glm::value_ptr(V));
 
-	glBindTexture(GL_TEXTURE_2D, fieldTex);
+	/*if (gamephase == MINION)
+		glBindTexture(GL_TEXTURE_2D, minionFieldTex);
+	else if (gamephase == BUILD)
+		glBindTexture(GL_TEXTURE_2D, buildFieldTex);*/
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
@@ -169,6 +195,17 @@ void createField(mat4 V)
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
 
+void ghostBuild(mat4 V, mat4 M)
+{
+	turret.push_back(FirstTurret(V, M, fieldTab));
+	changeGhostPosition();
+}
+
+void changeGhostPosition()
+{
+	turret.back().changePosX(mouseX);
+	turret.back().changePosZ(mouseY);
+}
 //Display function
 void displayFrame()
 {
@@ -235,6 +272,11 @@ void game()
 			glLoadMatrixf(value_ptr(P));
 			createField(V);
 
+			if (buildphase == GHOST)
+				ghostBuild(V, M);
+
+			turret.back().drawGhostTurret(V, M, fieldTab);
+
 			for (int i = 0; i < mobAlive.size(); i++)
 				mobAlive[i].buildPhase = true;
 
@@ -249,7 +291,7 @@ void MVP()
 	if (gamephase == MINION)
 		P = perspective(50.0f, 1.0f, 1.0f, 50.0f);
 	else if (gamephase == BUILD)
-		P = perspective(51.0f, 1.0f, 1.0f, 50.0f);
+		P = perspective(51.05f, 1.0f, 1.0f, 50.0f);
 	
 	V = lookAt(vec3(camera.getPosX(), camera.getPosY(), camera.getPosZ()),
 		vec3(camera.getAtX(), camera.getAtY(), camera.getAtZ()),
@@ -272,6 +314,7 @@ void changeLookAt()
 		
 	}
 }
+
 void drawMobOnField()
 {
 	if (mobAlive.size() > 0)
@@ -297,14 +340,15 @@ void deleteMob()
 void initializeGLUT(int* pargc, char **argv)
 {
 	glutInit(pargc, argv);
-	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowPosition(800, 0);
 	glutInitWindowSize(windowWidth, windowHeight);
 	glutCreateWindow("Tower Defense");
 	glutDisplayFunc(displayFrame);
 	glutIdleFunc(nextFrame);
 	glutSpecialFunc(specialKey);
-	glutKeyboardFunc(Keyboard);
+	glutKeyboardFunc(keyboard);
+	glutMouseFunc(mouse);
 }
 
 void initializeGLEW()
@@ -320,7 +364,8 @@ void initializeGLEW()
 //delete unnecessary things
 void deleteThings()
 {
-	glDeleteTextures(1, &fieldTex);
+	glDeleteTextures(1, &minionFieldTex);
+	glDeleteTextures(1, &buildFieldTex);
 }
 
 int main(int argc, char** argv)

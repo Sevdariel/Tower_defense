@@ -283,6 +283,9 @@ void Camera::startPos()
 	noseX = startNoseX;
 	noseY = startNoseY;
 	noseZ = startNoseZ;
+	tmpX = 00.0f;
+	tmpY = 0.0f;
+	tmpZ = 0.0f;
 }
 
 void Camera::check()
