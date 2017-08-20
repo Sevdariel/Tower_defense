@@ -31,6 +31,7 @@ class NormalMob
 		NormalMob(glm::mat4 V, glm::mat4 M, int fieldTab[21][21]);			//mob constructor
 		int getTabPosX();													//returning tabPosX
 		int getTabPosZ();													//returning tabPosZ
+		int getHealth();
 		~NormalMob();
 
 		bool buildPhase = false;											//build phase flag

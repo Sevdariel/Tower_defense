@@ -29,6 +29,7 @@ void initializeGLEW();
 void specialKey(int key, int x, int y);
 void keyboard(unsigned char key, int x, int y);
 void mouse(int button, int state, int x, int y);
+void mouseMovement(int x, int y);
 void field();
 void loadImage();
 void game();
@@ -41,22 +42,25 @@ void drawMobOnField();
 void changeLookAt();
 void ghostBuild(mat4 V, mat4 M);
 void changeGhostPosition();
+void createSolidTurret();
 
 GLuint minionFieldTex, buildFieldTex;
 mat4 P, V, M;
 enum GameState { MENU, GAME, GAME_OVER};
 enum GamePhase { BUILD, MINION};
-enum BuildPhase { GHOST, SOLID};
+enum BuildPhase { GHOSTBUILD, GHOST, SOLID};
+enum KeyPressed { LEFTKEY, RIGHTKEY, NOTHING};
 int windowWidth = 800, windowHeight = 800;
 int mobCount = 0, mobMaxCount = 30;
 std::vector<NormalMob> mobAlive;
 std::vector<FirstTurret> turret;
 int maxMobAlive = 30, deathMobCount = 0;
-float mouseX, mouseY;
+int pressMouseX, pressMouseZ, mouseX, mouseZ;
 
 GameState gamestate;
 GamePhase gamephase = MINION;
-BuildPhase buildphase;
+BuildPhase buildphase = SOLID;
+KeyPressed keypressed = NOTHING;
 Camera camera;
 NormalMob *normalMob;
 
@@ -127,7 +131,7 @@ void keyboard(unsigned char key, int x, int y)
 	}
 
 	if (gamephase == BUILD && (key == 'f' || key == 'F'))
-		buildphase = GHOST;
+		buildphase = GHOSTBUILD;
 	//quit when pushing esc button
 	if (key == 27)
 		exit(1);
@@ -135,12 +139,22 @@ void keyboard(unsigned char key, int x, int y)
 	nextFrame();
 }
 
-void mouse(int button, int state, int x, int y)
+void mouse(int button, int state, int x, int z)
 {
-	mouseX = x;
-	mouseY = y;
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+		keypressed = LEFTKEY;
+
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP)
+		keypressed = NOTHING;
+	pressMouseX = x;
+	pressMouseZ = z;
 }
 
+void mouseMovement(int x, int z)
+{
+	mouseX = x/20 - 20;
+	mouseZ = z/20 - 20;
+}
 void init()
 {
 	glClearColor(0, 0, 0, 1);
@@ -199,12 +213,18 @@ void ghostBuild(mat4 V, mat4 M)
 {
 	turret.push_back(FirstTurret(V, M, fieldTab));
 	changeGhostPosition();
+	buildphase = GHOST;
 }
 
 void changeGhostPosition()
 {
 	turret.back().changePosX(mouseX);
-	turret.back().changePosZ(mouseY);
+	turret.back().changePosZ(mouseZ);
+}
+void createSolidTurret()
+{
+	turret.back().isGhost = false;
+	buildphase = SOLID;
 }
 //Display function
 void displayFrame()
@@ -256,7 +276,7 @@ void game()
 
 			if (mobAlive.size() != maxMobAlive + deathMobCount && mobAlive.size() == 0)
 				createMob(V, M);
-			else if (mobAlive.size() != maxMobAlive && mobAlive.back().getTabPosX() != 0)
+			else if (mobAlive.size() != maxMobAlive + deathMobCount && mobAlive.back().getTabPosX() != 0)
 				createMob(V, M);
 
 			deleteMob();
@@ -272,10 +292,22 @@ void game()
 			glLoadMatrixf(value_ptr(P));
 			createField(V);
 
-			if (buildphase == GHOST)
+			if (buildphase == GHOSTBUILD)
 				ghostBuild(V, M);
 
-			turret.back().drawGhostTurret(V, M, fieldTab);
+			if (buildphase == GHOST)
+			{
+				changeGhostPosition();
+				for (int i = 0; i < turret.size() - 1; i++)
+					turret[i].drawSolidTurret(V, M, fieldTab);
+				turret.back().drawGhostTurret(V, M, fieldTab);
+				if (keypressed == LEFTKEY)
+					createSolidTurret();
+			}
+			for (int i = 0; i < turret.size(); i++)
+				if (turret[i].isGhost == false)
+					turret[i].drawSolidTurret(V, M, fieldTab);
+
 
 			for (int i = 0; i < mobAlive.size(); i++)
 				mobAlive[i].buildPhase = true;
@@ -330,7 +362,9 @@ void createMob(mat4 V, mat4 M)
 void deleteMob()
 {
 	for (int i = 0; i < mobAlive.size(); i++)
-		if (mobAlive[i].getTabPosX() == 20 || mobAlive[i].getTabPosZ() == 20)
+		if (mobAlive[i].getTabPosX() == 20 || 
+			mobAlive[i].getTabPosZ() == 20 || 
+			mobAlive[i].getHealth() == 0)
 		{
 			mobAlive.erase(mobAlive.begin() + i);
 			deathMobCount++;
@@ -349,6 +383,7 @@ void initializeGLUT(int* pargc, char **argv)
 	glutSpecialFunc(specialKey);
 	glutKeyboardFunc(keyboard);
 	glutMouseFunc(mouse);
+	glutPassiveMotionFunc(mouseMovement);
 }
 
 void initializeGLEW()

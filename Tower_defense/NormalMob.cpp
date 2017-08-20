@@ -63,6 +63,11 @@ int NormalMob::getTabPosZ()
 	return tabPosZ;
 }
 
+int NormalMob::getHealth()
+{
+	return healthPoints;
+}
+
 NormalMob::~NormalMob()	{	}
 
 void NormalMob::getStartingPos(int fieldTab[21][21])
