@@ -14,7 +14,7 @@ void NormalMob::startDrawMob(glm::mat4 V, glm::mat4 M, int fieldTab[21][21])
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, mobCubeVertices);
-	glColorPointer(3, GL_FLOAT, 0, mobCubeColors);
+	glColorPointer(4, GL_FLOAT, 0, mobCubeColors);
 	glDrawArrays(GL_QUADS, 0, mobCubeVertexCount);
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
@@ -41,7 +41,7 @@ void NormalMob::drawMob(glm::mat4 V, glm::mat4 M, int fieldTab[21][21])
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, mobCubeVertices);
-	glColorPointer(3, GL_FLOAT, 0, mobCubeColors);
+	glColorPointer(4, GL_FLOAT, 0, mobCubeColors);
 	glDrawArrays(GL_QUADS, 0, mobCubeVertexCount);
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
@@ -63,9 +63,34 @@ int NormalMob::getTabPosZ()
 	return tabPosZ;
 }
 
+float NormalMob::getPosX()
+{
+	return posX;
+}
+
+float NormalMob::getPosY()
+{
+	return posY;
+}
+
+float NormalMob::getPosZ()
+{
+	return posZ;
+}
+
 int NormalMob::getHealth()
 {
 	return healthPoints;
+}
+
+void NormalMob::setHealth(int level)
+{
+	healthPoints += pow(healthPoints, level);
+}
+
+void NormalMob::decreaseHealth(int health)
+{
+	healthPoints -= health;
 }
 
 NormalMob::~NormalMob()	{	}
@@ -129,7 +154,7 @@ void NormalMob::move(int fieldTab[21][21])
 				tabPosX--;
 			}
 			prevPosX = posX;
-			posX += changePos;
+			posX += changePos * speed;
 			break;
 		}
 		case RIGHT:
@@ -141,7 +166,7 @@ void NormalMob::move(int fieldTab[21][21])
 				tabPosX++;
 			}
 			prevPosX = posX;
-			posX -= changePos;
+			posX -= changePos * speed;
 			break;
 		}
 		case UP:
@@ -153,7 +178,7 @@ void NormalMob::move(int fieldTab[21][21])
 				tabPosZ--;
 			}
 			prevPosZ = posZ;
-			posZ -= changePos;
+			posZ -= changePos * speed;
 			break;
 		}
 		case DOWN:
@@ -165,7 +190,7 @@ void NormalMob::move(int fieldTab[21][21])
 				tabPosZ++;
 			}
 			prevPosZ = posZ;
-			posZ += changePos;
+			posZ += changePos * speed;
 			break;
 		}
 		case STOP:

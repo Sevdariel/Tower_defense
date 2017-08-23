@@ -4,7 +4,7 @@
 class Camera
 {
 	private:
-		const float startX = 0.0f, startY = -20.0f, startZ = 25.0f;				//camera starting position
+		const float startX = 0.0f, startY = 15.0f, startZ = 15.0f;				//camera starting position
 		const float startAtX = 0.0f, startAtY = 0.0f , startAtZ = 0.0f;			//camera looking at starting position
 		const float startNoseX = 0.0f, startNoseY = 1.0f, startNoseZ = 0.0f;	//camera nose vector starting position
 		float posX, posY, posZ;													//camera position

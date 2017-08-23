@@ -283,7 +283,7 @@ void Camera::startPos()
 	noseX = startNoseX;
 	noseY = startNoseY;
 	noseZ = startNoseZ;
-	tmpX = 00.0f;
+	tmpX = 0.0f;
 	tmpY = 0.0f;
 	tmpZ = 0.0f;
 }
@@ -291,9 +291,14 @@ void Camera::startPos()
 void Camera::check()
 {
 	std::cout << "camera.posX = " << posX << std::endl;
+	std::cout << "camera.posY = " << posY << std::endl;
 	std::cout << "camera.posZ = " << posZ << std::endl;
-	std::cout << "camera.tmpX = " << tmpX << std::endl;
-	std::cout << "camera.tmpZ = " << tmpZ << std::endl;
+	std::cout << "camera.atX = " << atX << std::endl;
+	std::cout << "camera.atY = " << atY << std::endl;
+	std::cout << "camera.atZ = " << atZ << std::endl;
+	std::cout << "camera.noseX = " << noseX << std::endl;
+	std::cout << "camera.noseY = " << noseY << std::endl;
+	std::cout << "camera.noseZ = " << noseZ << std::endl;
 	std::cout << std::endl;
 }
 

@@ -30,6 +30,9 @@
     <ClCompile Include="D:\Polibuda\Semestr IV\Grafika komputerowa i wizualizacja\Tower_defense\Tower_defense\..\..\lib\native\src\lodepng.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Arrow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -51,6 +54,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Arrow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrowVertices.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

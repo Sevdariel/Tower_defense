@@ -17,11 +17,12 @@
 #include "lodepng.h"
 #include "NormalMob.h"
 #include "FirstTurret.h"
+#include "Arrow.h"
 
 using namespace glm;
 
 void init();
-void createField(mat4 V);
+void createField(mat4 V, mat4 M);
 void displayFrame();
 void nextFrame();
 void initializeGLUT(int* pargc, char **argv);
@@ -39,10 +40,12 @@ void createMob(mat4 V, mat4 M);
 void deleteMob();
 void MVP();
 void drawMobOnField();
+void drawTurretsOnField();
 void changeLookAt();
 void ghostBuild(mat4 V, mat4 M);
 void changeGhostPosition();
 void createSolidTurret();
+void increaseLevel();
 
 GLuint minionFieldTex, buildFieldTex;
 mat4 P, V, M;
@@ -54,8 +57,12 @@ int windowWidth = 800, windowHeight = 800;
 int mobCount = 0, mobMaxCount = 30;
 std::vector<NormalMob> mobAlive;
 std::vector<FirstTurret> turret;
-int maxMobAlive = 30, deathMobCount = 0;
+std::vector<Arrow> arrow;
+int maxMobAlive = 1, deathMobCount = 0;
 int pressMouseX, pressMouseZ, mouseX, mouseZ;
+int level = 1;
+int gold;
+float income;
 
 GameState gamestate;
 GamePhase gamephase = MINION;
@@ -63,6 +70,37 @@ BuildPhase buildphase = SOLID;
 KeyPressed keypressed = NOTHING;
 Camera camera;
 NormalMob *normalMob;
+
+float lineVerticesX[] = 
+{
+	0, 0, 0,	1, 0, 0
+};
+
+float lineColorX[] =
+{
+	1, 0, 0, 1,		1, 0, 0, 1
+};
+
+float lineVerticesY[] = 
+{
+	0, 0, 0,	0, 1, 0
+};
+
+float lineColorY[] =
+{
+	0, 1, 0, 1,		0, 1, 0, 1
+};
+
+float lineVerticesZ[] = 
+{
+	0, 0, 0,	0, 0, 1
+};
+
+float lineColorZ[] =
+{
+	0, 0, 1, 1,		0, 0, 1, 1
+};
+
 
 int fieldTab[21][21];
 
@@ -83,6 +121,19 @@ void field()
 		}
 
 	field.close();
+}
+
+//increasing level
+void increaseLevel()
+{
+	if (deathMobCount == maxMobAlive)
+	{
+		level++;
+		gamephase = BUILD;
+		deathMobCount = 0;
+		mobAlive.clear();
+		arrow.clear();
+	}
 }
 
 //special keyboard keys
@@ -139,6 +190,7 @@ void keyboard(unsigned char key, int x, int y)
 	nextFrame();
 }
 
+//mouse clicking function
 void mouse(int button, int state, int x, int z)
 {
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
@@ -150,16 +202,20 @@ void mouse(int button, int state, int x, int z)
 	pressMouseZ = z;
 }
 
+//mouse movement function
 void mouseMovement(int x, int z)
 {
 	mouseX = x/20 - 20;
 	mouseZ = z/20 - 20;
 }
+
+//initialization function
 void init()
 {
 	glClearColor(0, 0, 0, 1);
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);
+	glEnable(GL_LIGHT0);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
@@ -168,6 +224,7 @@ void init()
 
 	gamestate = GAME;		//menu isnt create 
 }
+
 //load image to graphic card memory
 void loadImage()
 {
@@ -187,11 +244,11 @@ void loadImage()
 }
 
 //field creation vertices taken from "Field.h" add textures to field
-void createField(mat4 V)
+void createField(mat4 V, mat4 M)
 {
 	glMatrixMode(GL_MODELVIEW);
-	glLoadMatrixf(glm::value_ptr(V));
-
+	glLoadMatrixf(glm::value_ptr(V*M));
+	glBindTexture(GL_TEXTURE_2D, minionFieldTex);
 	/*if (gamephase == MINION)
 		glBindTexture(GL_TEXTURE_2D, minionFieldTex);
 	else if (gamephase == BUILD)
@@ -209,23 +266,33 @@ void createField(mat4 V)
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
 
+//creating ghost turret
 void ghostBuild(mat4 V, mat4 M)
 {
-	turret.push_back(FirstTurret(V, M, fieldTab));
+	turret.push_back(FirstTurret(V, M));
 	changeGhostPosition();
 	buildphase = GHOST;
 }
 
+//changing position in ghost buildphase
 void changeGhostPosition()
 {
-	turret.back().changePosX(mouseX);
-	turret.back().changePosZ(mouseZ);
+	turret.back().setPosX(mouseX);
+	turret.back().setPosZ(mouseZ);
 }
+
+//creating turret which is able to attack
 void createSolidTurret()
 {
 	turret.back().isGhost = false;
 	buildphase = SOLID;
 }
+
+void createArrow(mat4 V, mat4 M, int i)
+{
+	arrow.push_back(Arrow(V, M, turret[i].getPosX(), turret[i].getPosY(), turret[i].getPosZ()));
+}
+
 //Display function
 void displayFrame()
 {
@@ -251,11 +318,13 @@ void menu()
 {
 
 }
+
 //gameover gamestate
 void gameOver()
 {
 
 }
+
 //game gamestate
 void game()
 {
@@ -269,7 +338,7 @@ void game()
 			glMatrixMode(GL_PROJECTION);
 			glLoadMatrixf(value_ptr(P));
 
-			createField(V);
+			createField(V, M);
 
 			for (int i = 0; i < mobAlive.size(); i++)
 				mobAlive[i].buildPhase = false;
@@ -279,9 +348,61 @@ void game()
 			else if (mobAlive.size() != maxMobAlive + deathMobCount && mobAlive.back().getTabPosX() != 0)
 				createMob(V, M);
 
+			glMatrixMode(GL_MODELVIEW);
+			glLoadMatrixf(value_ptr(V*M));
+
+			glEnableClientState(GL_VERTEX_ARRAY);
+			glEnableClientState(GL_COLOR_ARRAY);
+			glVertexPointer(3, GL_FLOAT, 0, lineVerticesX);
+			glColorPointer(4, GL_FLOAT, 0, lineColorX);
+			glDrawArrays(GL_LINES, 0, 2);
+			glDisableClientState(GL_COLOR_ARRAY);
+			glDisableClientState(GL_VERTEX_ARRAY);
+
+			glMatrixMode(GL_MODELVIEW);
+			glLoadMatrixf(value_ptr(V*M));
+
+			glEnableClientState(GL_VERTEX_ARRAY);
+			glEnableClientState(GL_COLOR_ARRAY);
+			glVertexPointer(3, GL_FLOAT, 0, lineVerticesY);
+			glColorPointer(4, GL_FLOAT, 0, lineColorY);
+			glDrawArrays(GL_LINES, 0, 2);
+			glDisableClientState(GL_COLOR_ARRAY);
+			glDisableClientState(GL_VERTEX_ARRAY);
+
+			glMatrixMode(GL_MODELVIEW);
+			glLoadMatrixf(value_ptr(V*M));
+
+			glEnableClientState(GL_VERTEX_ARRAY);
+			glEnableClientState(GL_COLOR_ARRAY);
+			glVertexPointer(3, GL_FLOAT, 0, lineVerticesZ);
+			glColorPointer(4, GL_FLOAT, 0, lineColorZ);
+			glDrawArrays(GL_LINES, 0, 2);
+			glDisableClientState(GL_COLOR_ARRAY);
+			glDisableClientState(GL_VERTEX_ARRAY);
+
+			
+			if (turret.size() > 0)
+				for (int i = 0; i < turret.size(); i++)
+					if (turret[i].canAttack(mobAlive) && turret[i].canCreateArrow())
+						createArrow(V, M, i);
+
+			if (arrow.size() > 0)
+				for (int i = 0; i < turret.size(); i++)
+					if (turret[i].canAttack(mobAlive))
+						for (int j = 0; j < arrow.size(); j++)
+						{
+							arrow[j].setMobPosition(turret[i].getAttackMobPosX(), turret[i].getAttackMobPosY(), turret[i].getAttackMobPosZ());
+							arrow[j].setDistance();
+							arrow[j].drawArrow(V, M);
+							if (arrow[j].getDistanceX() <= 0.5f && arrow[j].getDistanceZ() <= 0.5f)
+								mobAlive[turret[i].getAttackedNumber()].decreaseHealth(turret[i].getDamage());							}
+
 			deleteMob();
 
 			drawMobOnField();
+			drawTurretsOnField();
+			increaseLevel();
 			break;
 		}
 		case BUILD:
@@ -290,7 +411,7 @@ void game()
 			
 			glMatrixMode(GL_PROJECTION);
 			glLoadMatrixf(value_ptr(P));
-			createField(V);
+			createField(V, M);
 
 			if (buildphase == GHOSTBUILD)
 				ghostBuild(V, M);
@@ -299,14 +420,14 @@ void game()
 			{
 				changeGhostPosition();
 				for (int i = 0; i < turret.size() - 1; i++)
-					turret[i].drawSolidTurret(V, M, fieldTab);
-				turret.back().drawGhostTurret(V, M, fieldTab);
+					turret[i].drawSolidTurret(V, M, mobAlive);
+				turret.back().drawGhostTurret(V, M);
 				if (keypressed == LEFTKEY)
 					createSolidTurret();
 			}
 			for (int i = 0; i < turret.size(); i++)
 				if (turret[i].isGhost == false)
-					turret[i].drawSolidTurret(V, M, fieldTab);
+					turret[i].drawSolidTurret(V, M, mobAlive);
 
 
 			for (int i = 0; i < mobAlive.size(); i++)
@@ -318,6 +439,7 @@ void game()
 	}
 }
 
+//init perspective, look at and and model view
 void MVP()
 {
 	if (gamephase == MINION)
@@ -325,12 +447,15 @@ void MVP()
 	else if (gamephase == BUILD)
 		P = perspective(51.05f, 1.0f, 1.0f, 50.0f);
 	
+	//V = lookAt(vec3(0.0f, 1.0f, 15.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
+
 	V = lookAt(vec3(camera.getPosX(), camera.getPosY(), camera.getPosZ()),
 		vec3(camera.getAtX(), camera.getAtY(), camera.getAtZ()),
 		vec3(camera.getNoseX(), camera.getNoseY(), camera.getNoseZ ()));
 	M = mat4(1.0f);
 }
 
+//changing camera position by gamephase
 void changeLookAt()
 {
 	if (gamephase == MINION)
@@ -347,6 +472,14 @@ void changeLookAt()
 	}
 }
 
+//draw turrets on field
+void drawTurretsOnField()
+{
+	if (turret.size() > 0)
+		for (int i = 0; i < turret.size(); i++)
+			turret[i].drawSolidTurret(V, M, mobAlive);
+}
+//drawing mobs on field
 void drawMobOnField()
 {
 	if (mobAlive.size() > 0)
@@ -354,21 +487,33 @@ void drawMobOnField()
 			mobAlive[i].drawMob(V, M, fieldTab);
 }
 
+//creating mobs
 void createMob(mat4 V, mat4 M)
 {
 	mobAlive.push_back(NormalMob(V, M, fieldTab));
+	mobAlive.back().setHealth(level);
 }
 
+//deleting mobs and adding gold
 void deleteMob()
 {
 	for (int i = 0; i < mobAlive.size(); i++)
-		if (mobAlive[i].getTabPosX() == 20 || 
-			mobAlive[i].getTabPosZ() == 20 || 
-			mobAlive[i].getHealth() == 0)
+	{
+		if (mobAlive[i].getTabPosX() == 20 || mobAlive[i].getTabPosZ() == 20)
 		{
 			mobAlive.erase(mobAlive.begin() + i);
 			deathMobCount++;
+			camera.check();
 		}
+		else if (mobAlive[i].getHealth() <= 0)
+		{
+			mobAlive.erase(mobAlive.begin() + i);
+			deathMobCount++;
+			gold = static_cast<int> (income);
+			income = pow(income, 1.2);
+			camera.check();
+		}
+	}
 }
 
 void initializeGLUT(int* pargc, char **argv)
@@ -408,6 +553,8 @@ int main(int argc, char** argv)
 	initializeGLUT(&argc, argv);
 	initializeGLEW();
 	init();
+
+	camera.check();
 
 	glutMainLoop();
 

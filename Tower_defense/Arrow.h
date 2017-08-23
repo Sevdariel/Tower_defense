@@ -1,18 +1,39 @@
 #ifndef ARROW_H
 #define ARROW_H
 
-const unsigned int arrowVertexCount = 2;
+#include "GL\glew.h"
+#include "GL\glut.h"
+#include "glm\glm.hpp"
+#include "glm\gtc\matrix_transform.hpp"
+#include "glm\gtc\type_ptr.hpp"
+#include <iostream>
 
-const float arrowVertices[] =
+using namespace glm;
+
+class Arrow
 {
-	0, 0, 0,
-	1, 0, 0
-};
+	float posX, posY, posZ;
+	float startPosX, startPosY, startPosZ;
+	float flySpeed = 0.01f;
+	float mobPosX, mobPosY, mobPosZ;
+	float distanceX, distanceZ;
+	void move();
+	void setStartingPosition(float x, float y, float z);
 
-const float arrowColor[] =
-{
-	1, 0, 0, 1,
-	1, 0, 0, 1
+	public:
+		Arrow(mat4 V, mat4 M, float x, float y, float z);
+		~Arrow();
+		void startDrawArrow(mat4 V, mat4 M);
+		void drawArrow(mat4 V, mat4 M);
+		float getPosX();
+		float getPosY();
+		float getPosZ();
+		void setPosX(float x);
+		void setPosY(float y);
+		void setPosZ(float z);
+		void setMobPosition(float mobPosX, float mobPosY, float mobPosZ);
+		void setDistance();
+		float getDistanceX();
+		float getDistanceZ();
 };
-
 #endif

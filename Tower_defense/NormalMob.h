@@ -11,7 +11,7 @@
 
 class NormalMob
 {
-	int speed, healthPoints;												//Mob speed and health
+	int speed = 1, healthPoints = 10;												//Mob speed and health
 	enum Directions { LEFT, RIGHT, UP, DOWN, NO_DIRECTION, STOP };			//mob moving directions
 	Directions direction = NO_DIRECTION;									//direction variable
 	Directions prevDirection;												//previous direction variable
@@ -31,7 +31,12 @@ class NormalMob
 		NormalMob(glm::mat4 V, glm::mat4 M, int fieldTab[21][21]);			//mob constructor
 		int getTabPosX();													//returning tabPosX
 		int getTabPosZ();													//returning tabPosZ
+		float getPosX();
+		float getPosY();
+		float getPosZ();
 		int getHealth();
+		void setHealth(int level);
+		void decreaseHealth(int health);
 		~NormalMob();
 
 		bool buildPhase = false;											//build phase flag
