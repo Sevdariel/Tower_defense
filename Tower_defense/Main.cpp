@@ -130,6 +130,8 @@ void increaseLevel()
 	{
 		level++;
 		gamephase = BUILD;
+		camera.buildPhase = true;
+		camera.changeCameraLookAt();
 		deathMobCount = 0;
 		mobAlive.clear();
 		arrow.clear();
