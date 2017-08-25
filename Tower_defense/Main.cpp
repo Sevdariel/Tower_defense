@@ -63,7 +63,7 @@ int maxMobAlive = 30, deathMobCount = 0;
 int pressMouseX, pressMouseZ, mouseX, mouseZ;
 int level = 1;
 int gold = 200;
-float income;
+float income = 5;
 const int turretCost = 50;
 
 GameState gamestate;
@@ -100,9 +100,11 @@ void increaseLevel()
 	if (deathMobCount == maxMobAlive)
 	{
 		level++;
-		gamephase = BUILD;
+		income = pow(income, 1.2);
+		
 		camera.buildPhase = true;
 		camera.changeCameraLookAt();
+		gamephase = BUILD;
 		deathMobCount = 0;
 		mobAlive.clear();
 		arrow.clear();
@@ -346,10 +348,16 @@ void game()
 						{
 							mobAlive[arrow[j].getAttackedMob()].decreaseHealth(turret[arrow[j].getTurretNumber()].getDamage());
 							arrow.erase(arrow.begin() + j);
-							deathMobCount++;
-							gold = static_cast<int> (income);
-							income = pow(income, 1.2);
+							for (int i = 0; i < mobAlive.size(); i++)
+								if (mobAlive[i].getHealth() <= 0)
+								{
+									mobAlive.erase(mobAlive.begin() + i);
+									deathMobCount++;
+									gold += static_cast<int> (income);
+									std::cout << "Gold = " << gold << std::endl;
+								}
 						}
+
 					}
 				
 			deleteMob();
@@ -501,6 +509,7 @@ void deleteMob()
 			deathMobCount++;
 			gold = static_cast<int> (income);
 			income = pow(income, 1.2);
+			mobAlive.erase(mobAlive.begin() + arrow[j].getAttackedMob());
 		}*/
 	}
 }
