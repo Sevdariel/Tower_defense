@@ -6,6 +6,11 @@ Camera::Camera()
 	startPos();
 }
 
+Camera::~Camera()
+{
+	std::cout << "Deleting camera." << std::endl;
+}
+
 void Camera::rightCameraRotation()
 {
 	//I quarter
@@ -288,24 +293,19 @@ void Camera::startPos()
 	tmpZ = 0.0f;
 }
 
-void Camera::check()
-{
-	std::cout << "camera.posX = " << posX << std::endl;
-	std::cout << "camera.posY = " << posY << std::endl;
-	std::cout << "camera.posZ = " << posZ << std::endl;
-	std::cout << "camera.atX = " << atX << std::endl;
-	std::cout << "camera.atY = " << atY << std::endl;
-	std::cout << "camera.atZ = " << atZ << std::endl;
-	std::cout << "camera.noseX = " << noseX << std::endl;
-	std::cout << "camera.noseY = " << noseY << std::endl;
-	std::cout << "camera.noseZ = " << noseZ << std::endl;
-	std::cout << std::endl;
-}
-
 void Camera::changeCameraLookAt()
 {
 	if (buildPhase == true)
 	{
+		prevPosX = posX;
+		prevPosY = posY;
+		prevPosZ = posZ;
+		prevAtX = atX;
+		prevAtY = atY;
+		prevAtZ = atZ;
+		prevNoseX = noseX;
+		prevNoseY = noseY;
+		prevNoseZ = noseZ;
 		posX = 0.0f;
 		posY = -50.0f;
 		posZ = 0.0f;
@@ -318,6 +318,14 @@ void Camera::changeCameraLookAt()
 	}
 	else
 	{
-		startPos();
+		posX = prevPosX;
+		posY = prevPosY;
+		posZ = prevPosZ;
+		atX = prevAtX;
+		atY = prevAtY;
+		atZ = prevAtZ;
+		noseX = prevNoseX;
+		noseY = prevNoseY;
+		noseZ = prevNoseZ;
 	}
 }

@@ -58,11 +58,13 @@ int mobCount = 0, mobMaxCount = 30;
 std::vector<NormalMob> mobAlive;
 std::vector<FirstTurret> turret;
 std::vector<Arrow> arrow;
-int maxMobAlive = 1, deathMobCount = 0;
+
+int maxMobAlive = 30, deathMobCount = 0;
 int pressMouseX, pressMouseZ, mouseX, mouseZ;
 int level = 1;
-int gold;
+int gold = 200;
 float income;
+const int turretCost = 50;
 
 GameState gamestate;
 GamePhase gamephase = MINION;
@@ -70,37 +72,6 @@ BuildPhase buildphase = SOLID;
 KeyPressed keypressed = NOTHING;
 Camera camera;
 NormalMob *normalMob;
-
-float lineVerticesX[] = 
-{
-	0, 0, 0,	1, 0, 0
-};
-
-float lineColorX[] =
-{
-	1, 0, 0, 1,		1, 0, 0, 1
-};
-
-float lineVerticesY[] = 
-{
-	0, 0, 0,	0, 1, 0
-};
-
-float lineColorY[] =
-{
-	0, 1, 0, 1,		0, 1, 0, 1
-};
-
-float lineVerticesZ[] = 
-{
-	0, 0, 0,	0, 0, 1
-};
-
-float lineColorZ[] =
-{
-	0, 0, 1, 1,		0, 0, 1, 1
-};
-
 
 int fieldTab[21][21];
 
@@ -293,6 +264,8 @@ void createSolidTurret()
 void createArrow(mat4 V, mat4 M, int i)
 {
 	arrow.push_back(Arrow(V, M, turret[i].getPosX(), turret[i].getPosY(), turret[i].getPosZ()));
+	arrow.back().setAttackedMob(turret[i].getAttackedNumber());
+	arrow.back().setTurretNumber(i);
 }
 
 //Display function
@@ -335,6 +308,9 @@ void game()
 	{
 		case MINION:
 		{
+			//if (turret.size()) > 0)
+				//if (turret.back().isGhost == true)
+					//turret.pop_back();
 			MVP();
 			
 			glMatrixMode(GL_PROJECTION);
@@ -345,61 +321,37 @@ void game()
 			for (int i = 0; i < mobAlive.size(); i++)
 				mobAlive[i].buildPhase = false;
 
-			if (mobAlive.size() != maxMobAlive + deathMobCount && mobAlive.size() == 0)
+			for (int i = 0; i < arrow.size(); i++)
+				arrow[i].buildPhase = false;
+
+			if (mobAlive.size() + deathMobCount != maxMobAlive && mobAlive.size() == 0)
 				createMob(V, M);
 			else if (mobAlive.size() != maxMobAlive + deathMobCount && mobAlive.back().getTabPosX() != 0)
 				createMob(V, M);
 
-			glMatrixMode(GL_MODELVIEW);
-			glLoadMatrixf(value_ptr(V*M));
-
-			glEnableClientState(GL_VERTEX_ARRAY);
-			glEnableClientState(GL_COLOR_ARRAY);
-			glVertexPointer(3, GL_FLOAT, 0, lineVerticesX);
-			glColorPointer(4, GL_FLOAT, 0, lineColorX);
-			glDrawArrays(GL_LINES, 0, 2);
-			glDisableClientState(GL_COLOR_ARRAY);
-			glDisableClientState(GL_VERTEX_ARRAY);
-
-			glMatrixMode(GL_MODELVIEW);
-			glLoadMatrixf(value_ptr(V*M));
-
-			glEnableClientState(GL_VERTEX_ARRAY);
-			glEnableClientState(GL_COLOR_ARRAY);
-			glVertexPointer(3, GL_FLOAT, 0, lineVerticesY);
-			glColorPointer(4, GL_FLOAT, 0, lineColorY);
-			glDrawArrays(GL_LINES, 0, 2);
-			glDisableClientState(GL_COLOR_ARRAY);
-			glDisableClientState(GL_VERTEX_ARRAY);
-
-			glMatrixMode(GL_MODELVIEW);
-			glLoadMatrixf(value_ptr(V*M));
-
-			glEnableClientState(GL_VERTEX_ARRAY);
-			glEnableClientState(GL_COLOR_ARRAY);
-			glVertexPointer(3, GL_FLOAT, 0, lineVerticesZ);
-			glColorPointer(4, GL_FLOAT, 0, lineColorZ);
-			glDrawArrays(GL_LINES, 0, 2);
-			glDisableClientState(GL_COLOR_ARRAY);
-			glDisableClientState(GL_VERTEX_ARRAY);
-
-			
 			if (turret.size() > 0)
 				for (int i = 0; i < turret.size(); i++)
 					if (turret[i].canAttack(mobAlive) && turret[i].canCreateArrow())
 						createArrow(V, M, i);
 
 			if (arrow.size() > 0)
-				for (int i = 0; i < turret.size(); i++)
-					if (turret[i].canAttack(mobAlive))
-						for (int j = 0; j < arrow.size(); j++)
+					for (int j = 0; j < arrow.size(); j++)
+					{
+						arrow[j].setMobPosition(mobAlive[arrow[j].getAttackedMob()].getPosX(),
+												mobAlive[arrow[j].getAttackedMob()].getPosY(),
+												mobAlive[arrow[j].getAttackedMob()].getPosZ());
+						arrow[j].setDistance();
+						arrow[j].drawArrow(V, M);
+						if (arrow[j].getDistanceX() <= 0.5f && arrow[j].getDistanceZ() <= 0.5f)
 						{
-							arrow[j].setMobPosition(turret[i].getAttackMobPosX(), turret[i].getAttackMobPosY(), turret[i].getAttackMobPosZ());
-							arrow[j].setDistance();
-							arrow[j].drawArrow(V, M);
-							if (arrow[j].getDistanceX() <= 0.5f && arrow[j].getDistanceZ() <= 0.5f)
-								mobAlive[turret[i].getAttackedNumber()].decreaseHealth(turret[i].getDamage());							}
-
+							mobAlive[arrow[j].getAttackedMob()].decreaseHealth(turret[arrow[j].getTurretNumber()].getDamage());
+							arrow.erase(arrow.begin() + j);
+							deathMobCount++;
+							gold = static_cast<int> (income);
+							income = pow(income, 1.2);
+						}
+					}
+				
 			deleteMob();
 
 			drawMobOnField();
@@ -416,24 +368,57 @@ void game()
 			createField(V, M);
 
 			if (buildphase == GHOSTBUILD)
-				ghostBuild(V, M);
-
+			{
+				if (gold >= turretCost)
+					ghostBuild(V, M);
+				else
+					std::cout << "You havent got enough gold!" << std::endl;
+			}
+			//std::cout << "turret number = " << turret.size() << std::endl;
 			if (buildphase == GHOST)
 			{
 				changeGhostPosition();
-				for (int i = 0; i < turret.size() - 1; i++)
-					turret[i].drawSolidTurret(V, M, mobAlive);
 				turret.back().drawGhostTurret(V, M);
 				if (keypressed == LEFTKEY)
-					createSolidTurret();
+				{
+					if (turret.size() > 1)
+						for (int i = 0; i < turret.size() - 1; i++)
+						{
+							if (turret.back().getPosX() != turret[i].getPosX() ||
+								turret.back().getPosZ() != turret[i].getPosZ())
+							{
+								createSolidTurret();
+								gold -= turretCost;
+								std::cout << "Gold = " << gold << std::endl;
+								break;
+							}
+							else
+							{
+								gold += turretCost;
+								std::cout << "Couldnt create turret. Another turret is placed here!" << std::endl;
+							}
+						}
+					else
+					{
+						createSolidTurret();
+						gold -= turretCost;
+						std::cout << "Gold = " << gold << std::endl;
+					}
+				}
 			}
+			
 			for (int i = 0; i < turret.size(); i++)
 				if (turret[i].isGhost == false)
 					turret[i].drawSolidTurret(V, M, mobAlive);
 
+			for (int i = 0; i < arrow.size(); i++)
+				arrow[i].buildPhase = true;
 
 			for (int i = 0; i < mobAlive.size(); i++)
 				mobAlive[i].buildPhase = true;
+
+			for (int i = 0; i < arrow.size(); i++)
+				arrow[i].drawArrow(V, M);
 
 			drawMobOnField();
 			break;
@@ -481,6 +466,7 @@ void drawTurretsOnField()
 		for (int i = 0; i < turret.size(); i++)
 			turret[i].drawSolidTurret(V, M, mobAlive);
 }
+
 //drawing mobs on field
 void drawMobOnField()
 {
@@ -505,16 +491,17 @@ void deleteMob()
 		{
 			mobAlive.erase(mobAlive.begin() + i);
 			deathMobCount++;
-			camera.check();
 		}
-		else if (mobAlive[i].getHealth() <= 0)
+		/*else if (mobAlive[i].getHealth() <= 0)
 		{
 			mobAlive.erase(mobAlive.begin() + i);
+			for (int j = 0; j < arrow.size(); j++)
+				if (arrow[j].getAttackedMob() == i)
+					arrow.erase(arrow.begin() + j);
 			deathMobCount++;
 			gold = static_cast<int> (income);
 			income = pow(income, 1.2);
-			camera.check();
-		}
+		}*/
 	}
 }
 
@@ -555,8 +542,6 @@ int main(int argc, char** argv)
 	initializeGLUT(&argc, argv);
 	initializeGLEW();
 	init();
-
-	camera.check();
 
 	glutMainLoop();
 

@@ -19,15 +19,16 @@ class FirstTurret
 {
 	private:
 		float posX, posY = 0.0f, posZ;
-		float range = 3.0f;
+		float range = 3.0f, dangerousRange = 2.5f;
 		int damage = 10, attackSpeed = 100;
-		int attackedNumber;
+		int attackedNumber = -1, dangerousAttackedNumber = -1;
+		int killNumber, dangerousKillNumber;
 		int attackCount = 100;
-		std::vector<Arrow> arrow;
 
 	public:
 		bool isGhost;
 		float attackMobPosX, attackMobPosZ, attackMobPosY;
+		float dangerousAttackMobPosX, dangerousAttackMobPosY, dangerousAttackMobPosZ;
 		
 		FirstTurret(mat4 V, mat4 M);
 		~FirstTurret();	
@@ -41,9 +42,6 @@ class FirstTurret
 		float getPosZ();
 		bool canAttack(std::vector<NormalMob> mobAlive);
 		float mobDistance(std::vector<NormalMob> mobAlive, int i);
-		float getAttackMobPosX();
-		float getAttackMobPosY();
-		float getAttackMobPosZ();
 		int getAttackedNumber();
 		int getDamage();
 		bool canCreateArrow();

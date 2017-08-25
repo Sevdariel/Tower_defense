@@ -41,18 +41,12 @@ float FirstTurret::getPosZ()
 bool FirstTurret::canAttack(std::vector<NormalMob> mobAlive)
 {
 	for (int i = 0; i < mobAlive.size(); i++)
-	{
 		if (mobDistance(mobAlive, i) < range)
 		{
-			attackMobPosX = mobAlive[i].getPosX();
-			attackMobPosY = mobAlive[i].getPosY();
-			attackMobPosZ = mobAlive[i].getPosZ();
 			attackedNumber = i;
 			return true;
 		}
-		else
-			return false;
-	}
+	return false;
 }
 
 float FirstTurret::mobDistance(std::vector<NormalMob> mobAlive, int i)
@@ -63,21 +57,6 @@ float FirstTurret::mobDistance(std::vector<NormalMob> mobAlive, int i)
 	float distance = sqrt(distanceSQR);
 
 	return distance;
-}
-
-float FirstTurret::getAttackMobPosX()
-{
-	return attackMobPosX;
-}
-
-float FirstTurret::getAttackMobPosY()
-{
-	return attackMobPosY;
-}
-
-float FirstTurret::getAttackMobPosZ()
-{
-	return attackMobPosZ;
 }
 
 int FirstTurret::getAttackedNumber()

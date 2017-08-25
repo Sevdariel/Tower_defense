@@ -7,23 +7,23 @@ void Arrow::move()
 	setDistance();
 	if (mobPosX < posX && mobPosZ < posZ)
 	{
-		posX -= /*startPosX + */flySpeed*distanceX;
-		posZ -= /*startPosZ - */flySpeed*distanceZ;
+		posX -= flySpeed*distanceX;
+		posZ -= flySpeed*distanceZ;
 	}
 	else if (mobPosX > posX && mobPosZ < posZ)
 	{
-		posX += /*startPosX -*/ flySpeed*distanceX;
-		posZ -= /*startPosZ -*/ flySpeed*distanceZ;
+		posX += flySpeed*distanceX;
+		posZ -= flySpeed*distanceZ;
 	}
 	else if (mobPosX > posX && mobPosZ > posZ)
 	{
-		posX += /*startPosX -*/ flySpeed*distanceX;
-		posZ += /*startPosZ +*/ flySpeed*distanceZ;
+		posX += flySpeed*distanceX;
+		posZ += flySpeed*distanceZ;
 	}
 	else if (mobPosX < posX && mobPosZ > posZ)
 	{
-		posX -= /*startPosX +*/ flySpeed*distanceX;
-		posZ += /*startPosZ +*/ flySpeed*distanceZ;
+		posX -= flySpeed*distanceX;
+		posZ += flySpeed*distanceZ;
 	}
 }
 
@@ -41,6 +41,26 @@ float Arrow::getDistanceX()
 float Arrow::getDistanceZ()
 {
 	return distanceZ;
+}
+
+void Arrow::setAttackedMob(int x)
+{
+	attackedMob = x;
+}
+
+int Arrow::getAttackedMob()
+{
+	return attackedMob;
+}
+
+void Arrow::setTurretNumber(int x)
+{
+	turretNumber = x;
+}
+
+int Arrow::getTurretNumber()
+{
+	return turretNumber;
 }
 
 void Arrow::setStartingPosition(float x, float y, float z)
@@ -80,7 +100,8 @@ void Arrow::startDrawArrow(mat4 V, mat4 M)
 
 void Arrow::drawArrow(mat4 V, mat4 M)
 {
-	move();
+	if (buildPhase == false)
+		move();
 	glMatrixMode(GL_MODELVIEW);
 	M = translate(M, vec3(posX, posY, posZ));
 	M = scale(M, vec3(0.1f, 0.1f, 0.1f));

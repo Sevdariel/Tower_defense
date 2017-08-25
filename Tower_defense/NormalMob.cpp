@@ -85,7 +85,7 @@ int NormalMob::getHealth()
 
 void NormalMob::setHealth(int level)
 {
-	healthPoints += pow(healthPoints, level);
+	healthPoints *= 1.1;
 }
 
 void NormalMob::decreaseHealth(int health)
