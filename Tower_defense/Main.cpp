@@ -33,6 +33,8 @@ void mouse(int button, int state, int x, int y);
 void mouseMovement(int x, int y);
 void field();
 void loadImage();
+void turretImage();
+void mobImage();
 void game();
 void menu();
 void gameOver();
@@ -47,7 +49,7 @@ void changeGhostPosition();
 void createSolidTurret();
 void increaseLevel();
 
-GLuint minionFieldTex, buildFieldTex;
+GLuint minionFieldTex, buildFieldTex,mobTex,turretTex;
 mat4 P, V, M;
 enum GameState { MENU, GAME, GAME_OVER};
 enum GamePhase { BUILD, MINION};
@@ -75,10 +77,43 @@ NormalMob *normalMob;
 
 int fieldTab[21][21];
 
+
+void mobImage() {
+	std::vector<unsigned char> image;
+	unsigned width, height;
+	unsigned error = lodepng::decode(image, width, height, "C:/Users/Karol/Downloads/Tower_defense-master (4)/Tower_defense-master/GameData/Plansza/angryface.png");
+	if (!error)
+		std::cout << "Mob texture loaded properly\n";
+	else
+		std::cout << "Mob texture didnt loaded\n";
+	glGenTextures(1, &mobTex);
+	glBindTexture(GL_TEXTURE_2D, mobTex);
+	glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*)image.data());
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+}
+
+void turretImage() {
+	std::vector<unsigned char> image;
+	unsigned width, height;
+	unsigned error = lodepng::decode(image, width, height, "C:/Users/Karol/Downloads/Tower_defense-master (4)/Tower_defense-master/GameData/Plansza/turretface.png");
+	if (!error)
+		std::cout << "Turret texture loaded properly\n";
+	else
+		std::cout << "Turret texture didnt loaded\n";
+	glGenTextures(1, &turretTex);
+	glBindTexture(GL_TEXTURE_2D, turretTex);
+	glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*)image.data());
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+}
+
 //field array
 void field()
 {
-	std::ifstream field("D:/Polibuda/Semestr IV/Grafika Komputerowa i wizualizacja/Tower_defense/GameData/Plansza/lvl1.txt");
+	std::ifstream field("C:/Users/Karol/Downloads/Tower_defense-master (4)/Tower_defense-master/GameData/Plansza/lvl1.txt");
 	if (field.good())
 		std::cout << "Map file loaded properly" << std::endl;
 	else
@@ -196,6 +231,9 @@ void init()
 	
 	loadImage();
 	field();
+	mobImage();
+	turretImage();
+
 
 	gamestate = GAME;		//menu isnt create 
 }
@@ -205,7 +243,7 @@ void loadImage()
 {
 	std::vector<unsigned char> image;
 	unsigned width, height;
-	unsigned error = lodepng::decode(image, width, height, "D:/Polibuda/Semestr IV/Grafika Komputerowa i wizualizacja/Tower_defense/GameData/Plansza/fieldTexture.png");
+	unsigned error = lodepng::decode(image, width, height, "C:/Users/Karol/Downloads/Tower_defense-master (4)/Tower_defense-master/GameData/Plansza/fieldTexture.png");
 	if (!error)
 		std::cout << "Minion map texture loaded properly\n";
 	else
@@ -244,7 +282,7 @@ void createField(mat4 V, mat4 M)
 //creating ghost turret
 void ghostBuild(mat4 V, mat4 M)
 {
-	turret.push_back(FirstTurret(V, M));
+	turret.push_back(FirstTurret(V, M,turretTex));
 	changeGhostPosition();
 	buildphase = GHOST;
 }
@@ -301,6 +339,7 @@ void gameOver()
 {
 
 }
+
 
 //game gamestate
 void game()
@@ -386,7 +425,7 @@ void game()
 			if (buildphase == GHOST)
 			{
 				changeGhostPosition();
-				turret.back().drawGhostTurret(V, M);
+				turret.back().drawGhostTurret(V, M,turretTex);
 				if (keypressed == LEFTKEY)
 				{
 					if (turret.size() > 1)
@@ -417,7 +456,7 @@ void game()
 			
 			for (int i = 0; i < turret.size(); i++)
 				if (turret[i].isGhost == false)
-					turret[i].drawSolidTurret(V, M, mobAlive);
+					turret[i].drawSolidTurret(V, M, mobAlive,turretTex);
 
 			for (int i = 0; i < arrow.size(); i++)
 				arrow[i].buildPhase = true;
@@ -472,7 +511,7 @@ void drawTurretsOnField()
 {
 	if (turret.size() > 0)
 		for (int i = 0; i < turret.size(); i++)
-			turret[i].drawSolidTurret(V, M, mobAlive);
+			turret[i].drawSolidTurret(V, M, mobAlive,turretTex);
 }
 
 //drawing mobs on field
@@ -480,7 +519,7 @@ void drawMobOnField()
 {
 	if (mobAlive.size() > 0)
 		for (int i = 0; i < mobAlive.size(); i++)
-			mobAlive[i].drawMob(V, M, fieldTab);
+			mobAlive[i].drawMob(V, M, fieldTab,mobTex);
 }
 
 //creating mobs

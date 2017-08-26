@@ -1,9 +1,9 @@
 #include "FirstTurret.h"
 #include "MobVertices.h"
 
-FirstTurret::FirstTurret(mat4 V, mat4 M)
+FirstTurret::FirstTurret(mat4 V, mat4 M,GLuint tex)
 {
-	drawGhostTurret(V, M);
+	drawGhostTurret(V, M,tex);
 }
 
 FirstTurret::~FirstTurret() { }
@@ -84,34 +84,43 @@ bool FirstTurret::canCreateArrow()
 	}
 }
 
-void FirstTurret::drawGhostTurret(mat4 V, mat4 M)
+void FirstTurret::drawGhostTurret(mat4 V, mat4 M,GLuint tex)
 {
 	glMatrixMode(GL_MODELVIEW);
 	M = translate(M, vec3(posX, posY, posZ));
 	M = scale(M, vec3(0.5f, 1, 0.5f));
 	glLoadMatrixf(value_ptr(V*M));
 
+	glBindTexture(GL_TEXTURE_2D, tex);
 	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	//glEnableClientState(GL_COLOR_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, mobCubeVertices);
-	glColorPointer(4, GL_FLOAT, 0, mobCubeColorsAlpha);
+	//glColorPointer(4, GL_FLOAT, 0, mobCubeColorsAlpha);
+	glTexCoordPointer(2, GL_FLOAT, 0, mobCubeTex);
 	glDrawArrays(GL_QUADS, 0, mobCubeVertexCount);
-	glDisableClientState(GL_COLOR_ARRAY);
+	//glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
-void FirstTurret::drawSolidTurret(mat4 V, mat4 M, std::vector<NormalMob> mobAlive)
+void FirstTurret::drawSolidTurret(mat4 V, mat4 M, std::vector<NormalMob> mobAlive, GLuint tex)
 {
 	glMatrixMode(GL_MODELVIEW);
 	M = translate(M, vec3(posX, posY, posZ));
 	M = scale(M, vec3(0.5f, 1, 0.5f));
 	glLoadMatrixf(value_ptr(V*M));
 
+	
+	glBindTexture(GL_TEXTURE_2D, tex);
 	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	//glEnableClientState(GL_COLOR_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, mobCubeVertices);
-	glColorPointer(4, GL_FLOAT, 0, mobCubeColors);
+	glTexCoordPointer(2, GL_FLOAT, 0, mobCubeTex);
+	//glColorPointer(4, GL_FLOAT, 0, mobCubeColors);
 	glDrawArrays(GL_QUADS, 0, mobCubeVertexCount);
 	glDisableClientState(GL_COLOR_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	//glDisableClientState(GL_VERTEX_ARRAY);
 }

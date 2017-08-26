@@ -27,7 +27,7 @@ class NormalMob
 	int countX, countZ;														//addition variable needed to change array coords
 
 	public:
-		void drawMob(glm::mat4 V, glm::mat4 M, int fieldTab[21][21]);		//standard mob draw
+		void drawMob(glm::mat4 V, glm::mat4 M, int fieldTab[21][21],GLuint tex);		//standard mob draw
 		NormalMob(glm::mat4 V, glm::mat4 M, int fieldTab[21][21]);			//mob constructor
 		int getTabPosX();													//returning tabPosX
 		int getTabPosZ();													//returning tabPosZ

@@ -30,10 +30,10 @@ class FirstTurret
 		float attackMobPosX, attackMobPosZ, attackMobPosY;
 		float dangerousAttackMobPosX, dangerousAttackMobPosY, dangerousAttackMobPosZ;
 		
-		FirstTurret(mat4 V, mat4 M);
+		FirstTurret(mat4 V, mat4 M,GLuint tex);
 		~FirstTurret();	
-		void drawGhostTurret(mat4 V, mat4 M);
-		void drawSolidTurret(mat4 V, mat4 M, std::vector<NormalMob> mobAlive);
+		void drawGhostTurret(mat4 V, mat4 M,GLuint tex);
+		void drawSolidTurret(mat4 V, mat4 M, std::vector<NormalMob> mobAlive,GLuint tex);
 		void setPosX(int x);
 		void setPosY(int y);
 		void setPosZ(int z);

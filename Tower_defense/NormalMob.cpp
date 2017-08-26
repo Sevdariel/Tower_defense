@@ -20,7 +20,7 @@ void NormalMob::startDrawMob(glm::mat4 V, glm::mat4 M, int fieldTab[21][21])
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
 
-void NormalMob::drawMob(glm::mat4 V, glm::mat4 M, int fieldTab[21][21])
+void NormalMob::drawMob(glm::mat4 V, glm::mat4 M, int fieldTab[21][21],GLuint tex)
 {
 	if (direction == STOP)
 	{
@@ -38,12 +38,16 @@ void NormalMob::drawMob(glm::mat4 V, glm::mat4 M, int fieldTab[21][21])
 	}
 	glLoadMatrixf(value_ptr(V*M));
 
+	glBindTexture(GL_TEXTURE_2D, tex);
 	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
+	//glEnableClientState(GL_COLOR_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, mobCubeVertices);
+	glTexCoordPointer(2, GL_FLOAT, 0, mobCubeTex);
 	glColorPointer(4, GL_FLOAT, 0, mobCubeColors);
 	glDrawArrays(GL_QUADS, 0, mobCubeVertexCount);
-	glDisableClientState(GL_COLOR_ARRAY);
+	//glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
 
@@ -196,4 +200,6 @@ void NormalMob::move(int fieldTab[21][21])
 		case STOP:
 			break;
 	}
+
+	
 }
