@@ -104,9 +104,9 @@ void NormalMob::getStartingPos(int fieldTab[21][21])
 	for (int i = 0; i < 21; i++)
 		if (fieldTab[i][0] == 2)
 		{
-			posX = static_cast<float> (20 - 0.5f);
+			posX = static_cast<float> (20);
 			posY = 0.0f;
-			posZ = static_cast<float> (i * 2 - 20);
+			posZ = static_cast<float> (i * 1.75 - 20);
 			tabPosX = 0;
 			tabPosZ = i;
 			break;
@@ -115,7 +115,7 @@ void NormalMob::getStartingPos(int fieldTab[21][21])
 	prevPosX = posX;
 	prevPosZ = posZ;
 	countX = tabPosX;
-	countZ = tabPosZ * 80;
+	countZ = tabPosZ * 78;
 }
 
 void NormalMob::checkRoute(int fieldTab[21][21])
@@ -176,7 +176,7 @@ void NormalMob::move(int fieldTab[21][21])
 		case UP:
 		{
 			countZ--;
-			if (countZ % 80 == 0)
+			if (countZ % 78 == 0)
 			{
 				prevDirection = direction;
 				tabPosZ--;
@@ -188,7 +188,7 @@ void NormalMob::move(int fieldTab[21][21])
 		case DOWN:
 		{
 			countZ++;
-			if (countZ % 80 == 0)
+			if (countZ % 78 == 0)
 			{
 				prevDirection = direction;
 				tabPosZ++;

@@ -81,7 +81,7 @@ int fieldTab[21][21];
 void mobImage() {
 	std::vector<unsigned char> image;
 	unsigned width, height;
-	unsigned error = lodepng::decode(image, width, height, "C:/Users/Karol/Downloads/Tower_defense-master (4)/Tower_defense-master/GameData/Plansza/angryface.png");
+	unsigned error = lodepng::decode(image, width, height, "GameData/Plansza/angryface.png");
 	if (!error)
 		std::cout << "Mob texture loaded properly\n";
 	else
@@ -90,14 +90,15 @@ void mobImage() {
 	glBindTexture(GL_TEXTURE_2D, mobTex);
 	glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*)image.data());
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	
 }
 
 void turretImage() {
 	std::vector<unsigned char> image;
 	unsigned width, height;
-	unsigned error = lodepng::decode(image, width, height, "C:/Users/Karol/Downloads/Tower_defense-master (4)/Tower_defense-master/GameData/Plansza/turretface.png");
+	unsigned error = lodepng::decode(image, width, height, "GameData/Plansza/turretface.png");
 	if (!error)
 		std::cout << "Turret texture loaded properly\n";
 	else
@@ -106,14 +107,15 @@ void turretImage() {
 	glBindTexture(GL_TEXTURE_2D, turretTex);
 	glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*)image.data());
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	
 }
 
 //field array
 void field()
 {
-	std::ifstream field("C:/Users/Karol/Downloads/Tower_defense-master (4)/Tower_defense-master/GameData/Plansza/lvl1.txt");
+	std::ifstream field("GameData/Plansza/level.txt");
 	if (field.good())
 		std::cout << "Map file loaded properly" << std::endl;
 	else
@@ -243,7 +245,8 @@ void loadImage()
 {
 	std::vector<unsigned char> image;
 	unsigned width, height;
-	unsigned error = lodepng::decode(image, width, height, "C:/Users/Karol/Downloads/Tower_defense-master (4)/Tower_defense-master/GameData/Plansza/fieldTexture.png");
+	//unsigned error = lodepng::decode(image, width, height, "D:/Polibuda/Semestr IV/Grafika komputerowa i wizualizacja/Tower_defense/GameData/Plansza/fieldTextureNew.png");
+	unsigned error = lodepng::decode(image, width, height, "GameData/Plansza/fieldTextureNew.png");
 	if (!error)
 		std::cout << "Minion map texture loaded properly\n";
 	else
@@ -268,14 +271,14 @@ void createField(mat4 V, mat4 M)
 		glBindTexture(GL_TEXTURE_2D, buildFieldTex);*/
 
 	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
+//	glEnableClientState(GL_COLOR_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, fieldVertices);
 	glColorPointer(3, GL_FLOAT, 0, fieldColors);
 	glTexCoordPointer(2, GL_FLOAT, 0, fieldTextureCoords);
 	glDrawArrays(GL_QUADS, 0, fieldVertexCount);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
+	//glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
 
@@ -394,6 +397,7 @@ void game()
 									deathMobCount++;
 									gold += static_cast<int> (income);
 									std::cout << "Gold = " << gold << std::endl;
+									
 								}
 						}
 

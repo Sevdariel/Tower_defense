@@ -120,7 +120,7 @@ void FirstTurret::drawSolidTurret(mat4 V, mat4 M, std::vector<NormalMob> mobAliv
 	glTexCoordPointer(2, GL_FLOAT, 0, mobCubeTex);
 	//glColorPointer(4, GL_FLOAT, 0, mobCubeColors);
 	glDrawArrays(GL_QUADS, 0, mobCubeVertexCount);
-	glDisableClientState(GL_COLOR_ARRAY);
+	//glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	//glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
 }
