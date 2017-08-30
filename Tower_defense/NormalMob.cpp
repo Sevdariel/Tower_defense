@@ -3,7 +3,7 @@
 
 using namespace glm;
 
-void NormalMob::startDrawMob(glm::mat4 V, glm::mat4 M, int fieldTab[21][21])
+void NormalMob::startDrawMob(glm::mat4 V, glm::mat4 M, int fieldTab[20][20])
 {
 	checkRoute(fieldTab);
 	glMatrixMode(GL_MODELVIEW);
@@ -14,13 +14,13 @@ void NormalMob::startDrawMob(glm::mat4 V, glm::mat4 M, int fieldTab[21][21])
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, mobCubeVertices);
-	glColorPointer(4, GL_FLOAT, 0, mobCubeColors);
+	//glColorPointer(4, GL_FLOAT, 0, mobCubeColors);
 	glDrawArrays(GL_QUADS, 0, mobCubeVertexCount);
 	glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
 
-void NormalMob::drawMob(glm::mat4 V, glm::mat4 M, int fieldTab[21][21],GLuint tex)
+void NormalMob::drawMob(glm::mat4 V, glm::mat4 M, int fieldTab[20][20],GLuint tex)
 {
 	if (direction == STOP)
 	{
@@ -44,14 +44,14 @@ void NormalMob::drawMob(glm::mat4 V, glm::mat4 M, int fieldTab[21][21],GLuint te
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, mobCubeVertices);
 	glTexCoordPointer(2, GL_FLOAT, 0, mobCubeTex);
-	glColorPointer(4, GL_FLOAT, 0, mobCubeColors);
+	//glColorPointer(4, GL_FLOAT, 0, mobCubeColors);
 	glDrawArrays(GL_QUADS, 0, mobCubeVertexCount);
 	//glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
 
-NormalMob::NormalMob(glm::mat4 V, glm::mat4 M, int fieldTab[21][21])
+NormalMob::NormalMob(glm::mat4 V, glm::mat4 M, int fieldTab[20][20])
 {
 	getStartingPos(fieldTab);
 	startDrawMob(V,M, fieldTab);
@@ -99,14 +99,14 @@ void NormalMob::decreaseHealth(int health)
 
 NormalMob::~NormalMob()	{	}
 
-void NormalMob::getStartingPos(int fieldTab[21][21])
+void NormalMob::getStartingPos(int fieldTab[20][20])
 {
 	for (int i = 0; i < 21; i++)
 		if (fieldTab[i][0] == 2)
 		{
-			posX = static_cast<float> (20);
-			posY = 0.0f;
-			posZ = static_cast<float> (i * 1.75 - 20);
+			posX = static_cast<float> (20 - 0.5f);
+			posY = -0.5f;
+			posZ = static_cast<float> (i * 2 - 19.5f);
 			tabPosX = 0;
 			tabPosZ = i;
 			break;
@@ -115,12 +115,12 @@ void NormalMob::getStartingPos(int fieldTab[21][21])
 	prevPosX = posX;
 	prevPosZ = posZ;
 	countX = tabPosX;
-	countZ = tabPosZ * 78;
+	countZ = tabPosZ * static_cast<int> (80 / speed);
 }
 
-void NormalMob::checkRoute(int fieldTab[21][21])
+void NormalMob::checkRoute(int fieldTab[20][20])
 {
-	if (tabPosX == 21 || buildPhase == true)
+	if (tabPosX == 20 || buildPhase == true)
 		direction = STOP;
 	else if (tabPosX == 0)
 	{
@@ -144,7 +144,7 @@ void NormalMob::checkRoute(int fieldTab[21][21])
 	}
 }
 
-void NormalMob::move(int fieldTab[21][21])
+void NormalMob::move(int fieldTab[20][20])
 {
 	checkRoute(fieldTab);
 	switch (direction)
@@ -152,7 +152,7 @@ void NormalMob::move(int fieldTab[21][21])
 		case LEFT:
 		{
 			countX--;
-			if (countX % 80 == 0)
+			if (countX % (static_cast<int>(80/speed)) == 0)
 			{
 				prevDirection = direction;
 				tabPosX--;
@@ -164,7 +164,7 @@ void NormalMob::move(int fieldTab[21][21])
 		case RIGHT:
 		{
 			countX++;
-			if (countX % 80 == 0)
+			if (countX % (static_cast<int> (80/speed)) == 0)
 			{
 				prevDirection = direction;
 				tabPosX++;
@@ -176,7 +176,7 @@ void NormalMob::move(int fieldTab[21][21])
 		case UP:
 		{
 			countZ--;
-			if (countZ % 78 == 0)
+			if (countZ % (static_cast<int>(80/speed)) == 0)
 			{
 				prevDirection = direction;
 				tabPosZ--;
@@ -188,7 +188,7 @@ void NormalMob::move(int fieldTab[21][21])
 		case DOWN:
 		{
 			countZ++;
-			if (countZ % 78 == 0)
+			if (countZ % (static_cast<int>(80 / speed)) == 0)
 			{
 				prevDirection = direction;
 				tabPosZ++;

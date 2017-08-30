@@ -11,7 +11,8 @@
 
 class NormalMob
 {
-	int speed = 1, healthPoints = 10;										//Mob speed and health
+	int	healthPoints = 10;													//Mob speed and health
+	float speed = 10.0f;
 	enum Directions { LEFT, RIGHT, UP, DOWN, NO_DIRECTION, STOP };			//mob moving directions
 	Directions direction = NO_DIRECTION;									//direction variable
 	Directions prevDirection;												//previous direction variable
@@ -20,15 +21,15 @@ class NormalMob
 	float changePos = 0.025f;												//moving distance
 	int tabPosX, tabPosZ;													//array coordinates
 
-	void getStartingPos(int fieldTab[21][21]);								//set starting position
-	void startDrawMob(glm::mat4 V, glm::mat4 M, int fieldTab[21][21]);		//first mob draw
-	void checkRoute(int fieldTab[21][21]);									//checking where mob can go
-	void move(int fieldTab[21][21]);										//move
+	void getStartingPos(int fieldTab[20][20]);								//set starting position
+	void startDrawMob(glm::mat4 V, glm::mat4 M, int fieldTab[20][20]);		//first mob draw
+	void checkRoute(int fieldTab[20][20]);									//checking where mob can go
+	void move(int fieldTab[20][20]);										//move
 	int countX, countZ;														//addition variable needed to change array coords
 
 	public:
-		void drawMob(glm::mat4 V, glm::mat4 M, int fieldTab[21][21],GLuint tex);		//standard mob draw
-		NormalMob(glm::mat4 V, glm::mat4 M, int fieldTab[21][21]);			//mob constructor
+		void drawMob(glm::mat4 V, glm::mat4 M, int fieldTab[20][20],GLuint tex);		//standard mob draw
+		NormalMob(glm::mat4 V, glm::mat4 M, int fieldTab[20][20]);			//mob constructor
 		int getTabPosX();													//returning tabPosX
 		int getTabPosZ();													//returning tabPosZ
 		float getPosX();

@@ -10,7 +10,7 @@ FirstTurret::~FirstTurret() { }
 
 void FirstTurret::setPosX(int x)
 {
-	posX = -static_cast<float> (x);
+	posX = static_cast<float> (x);
 }
 
 void FirstTurret::setPosY(int y)
@@ -82,6 +82,18 @@ bool FirstTurret::canCreateArrow()
 		attackCount++;
 		return false;
 	}
+}
+
+void FirstTurret::upgrade()
+{
+	damage *= 1.1;
+	attackSpeed--;
+	upgradeCost *= 1.3;
+}
+
+int FirstTurret::getUpgradeCost()
+{
+	return upgradeCost;
 }
 
 void FirstTurret::drawGhostTurret(mat4 V, mat4 M,GLuint tex)

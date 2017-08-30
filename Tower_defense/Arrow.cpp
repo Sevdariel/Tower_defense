@@ -8,21 +8,25 @@ void Arrow::move()
 	if (mobPosX < posX && mobPosZ < posZ)
 	{
 		posX -= flySpeed*distanceX;
+		posY += flySpeed*distanceY;
 		posZ -= flySpeed*distanceZ;
 	}
 	else if (mobPosX > posX && mobPosZ < posZ)
 	{
 		posX += flySpeed*distanceX;
+		posY += flySpeed*distanceY;
 		posZ -= flySpeed*distanceZ;
 	}
 	else if (mobPosX > posX && mobPosZ > posZ)
 	{
 		posX += flySpeed*distanceX;
+		posY += flySpeed*distanceY;
 		posZ += flySpeed*distanceZ;
 	}
 	else if (mobPosX < posX && mobPosZ > posZ)
 	{
 		posX -= flySpeed*distanceX;
+		posY += flySpeed*distanceY;
 		posZ += flySpeed*distanceZ;
 	}
 }
@@ -31,6 +35,7 @@ void Arrow::setDistance()
 {
 	distanceX = abs(mobPosX - posX);
 	distanceZ = abs(mobPosZ - posZ);
+	distanceY = abs(mobPosY - posY);
 }
 
 float Arrow::getDistanceX()
@@ -41,6 +46,11 @@ float Arrow::getDistanceX()
 float Arrow::getDistanceZ()
 {
 	return distanceZ;
+}
+
+float Arrow::getDistanceY()
+{
+	return distanceY;
 }
 
 void Arrow::setAttackedMob(int x)
@@ -86,7 +96,7 @@ void Arrow::startDrawArrow(mat4 V, mat4 M)
 	
 	glMatrixMode(GL_MODELVIEW);
 	M = translate(M, vec3(startPosX, startPosY, startPosZ));
-	M = scale(M, vec3(0.1f, 0.1f, 0.1f));
+	M = scale(M, vec3(0.05f, 0.05f, 0.05f));
 	glLoadMatrixf(value_ptr(V*M));
 
 	glEnableClientState(GL_VERTEX_ARRAY);

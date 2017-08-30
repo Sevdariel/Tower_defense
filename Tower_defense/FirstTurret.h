@@ -18,12 +18,13 @@ using namespace glm;
 class FirstTurret
 {
 	private:
-		float posX, posY = 0.0f, posZ;
+		float posX, posY = -1.0f, posZ;
 		float range = 3.0f, dangerousRange = 2.5f;
 		int damage = 10, attackSpeed = 100;
 		int attackedNumber = -1, dangerousAttackedNumber = -1;
 		int killNumber, dangerousKillNumber;
 		int attackCount = 100;
+		int upgradeCost = 25;
 
 	public:
 		bool isGhost;
@@ -45,6 +46,8 @@ class FirstTurret
 		int getAttackedNumber();
 		int getDamage();
 		bool canCreateArrow();
+		void upgrade();
+		int getUpgradeCost();
 };
 
 #endif

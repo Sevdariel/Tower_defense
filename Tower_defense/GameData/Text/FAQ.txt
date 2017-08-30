@@ -1,0 +1,19 @@
+Hello guys!
+This is FAQ of our game. Read it carrefully.
+This is !!!sterowanie!!!
+
+O - camera left rotation
+P - camera right rotation
+Arrows - move camera
+M - minion phase (minions are moving)
+B - build phase (you can build now)
+F - buy turret (only in build phase)
+Left mouse button - build turret (only when you buy turret)
+U - upgrade turret (only in build phase)
+Left mouse button - upgrade turret (only when you upgrade turret)
+S - return to starting camera position
+ESC - quit game
+
+Enjoy and have fun :)
+
+Game powered by Michal Zalewski and Karol Michalowski

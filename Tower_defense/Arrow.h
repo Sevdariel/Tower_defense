@@ -16,7 +16,7 @@ class Arrow
 	float startPosX, startPosY, startPosZ;
 	float flySpeed = 0.05f;
 	float mobPosX, mobPosY, mobPosZ;
-	float distanceX, distanceZ;
+	float distanceX, distanceZ, distanceY;
 	void move();
 	void setStartingPosition(float x, float y, float z);
 	int attackedMob;
@@ -39,6 +39,7 @@ class Arrow
 		void setDistance();
 		float getDistanceX();
 		float getDistanceZ();
+		float getDistanceY();
 		void setAttackedMob(int x);
 		int getAttackedMob();
 		void setTurretNumber(int x);

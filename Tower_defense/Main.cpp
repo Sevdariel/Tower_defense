@@ -6,12 +6,18 @@
 #include "glm\glm.hpp"
 #include "glm\gtc\matrix_transform.hpp"
 #include "glm\gtc\type_ptr.hpp"
+#include <ft2build.h>
+#include FT_FREETYPE_H
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
 #include <stdio.h>
 #include <cmath>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
+#include <map>
 #include "Field.h"
 #include "Camera.h"
 #include "lodepng.h"
@@ -32,7 +38,7 @@ void keyboard(unsigned char key, int x, int y);
 void mouse(int button, int state, int x, int y);
 void mouseMovement(int x, int y);
 void field();
-void loadImage();
+void mapImage();
 void turretImage();
 void mobImage();
 void game();
@@ -48,35 +54,154 @@ void ghostBuild(mat4 V, mat4 M);
 void changeGhostPosition();
 void createSolidTurret();
 void increaseLevel();
+void selectMob();
+bool checkPathRoute();
 
 GLuint minionFieldTex, buildFieldTex,mobTex,turretTex;
 mat4 P, V, M;
+FT_Library library;
+FT_Face face;
+
 enum GameState { MENU, GAME, GAME_OVER};
 enum GamePhase { BUILD, MINION};
-enum BuildPhase { GHOSTBUILD, GHOST, SOLID};
+enum BuildPhase { GHOSTBUILD, GHOST, SOLID, UPGRADE};
 enum KeyPressed { LEFTKEY, RIGHTKEY, NOTHING};
-int windowWidth = 800, windowHeight = 800;
-int mobCount = 0, mobMaxCount = 30;
+
 std::vector<NormalMob> mobAlive;
 std::vector<FirstTurret> turret;
 std::vector<Arrow> arrow;
 
-int maxMobAlive = 30, deathMobCount = 0;
+int windowWidth = 800, windowHeight = 800;
+int mobCount = 0, mobMaxCount = 10;
+int maxMobAlive = 10, deathMobCount = 0;
+int totalMobDied = 0;
 int pressMouseX, pressMouseZ, mouseX, mouseZ;
 int level = 1;
 int gold = 200;
+int lives = 50;
 float income = 5;
-const int turretCost = 50;
+const int turretCost = 0;
+const int maxMobType = 1;
+int mobType = 0;
+bool start = true;
 
 GameState gamestate;
 GamePhase gamephase = MINION;
 BuildPhase buildphase = SOLID;
+BuildPhase prevbuildphase = buildphase;
 KeyPressed keypressed = NOTHING;
 Camera camera;
 NormalMob *normalMob;
 
-int fieldTab[21][21];
+int fieldTab[20][20];
 
+struct Character
+{
+	GLuint textureID;
+	vec2 size;
+	vec2 bearing;
+	GLuint advance;
+};
+
+std::map<GLchar, Character> Characters;
+GLfloat texVertices[] = {
+	0,0,	0, 1,	1, 1,	
+	1,1,	1, 0,	0,0
+};
+
+void generateTexture()
+{
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	for (GLubyte i = 0; i < 128; i++)
+	{
+		if (FT_Load_Char(face, i, FT_LOAD_RENDER))
+		{
+			std::cout << "ERROR::FREETYPE: Failed to load Glyph" << std::endl;
+			continue;
+		}
+
+		GLuint texture;
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, face->glyph->bitmap.width, face->glyph->bitmap.rows, 
+					 0, GL_RED, GL_UNSIGNED_BYTE, face->glyph->bitmap.buffer);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		Character character = {
+			texture,
+			vec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+			vec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+			face->glyph->advance.x
+		};
+		Characters.insert(std::pair<GLchar, Character>(i, character));
+	}
+
+	FT_Done_Face(face);
+	FT_Done_FreeType(library);
+}
+
+void freeTypeLibraryInit()
+{
+	if (FT_Init_FreeType(&library))
+		std::cout << "Error::FREETYPE: Could not init FreeType Library" << std::endl;
+	else
+		std::cout << "FreeType Library loaded properly" << std::endl;
+
+	
+	if (FT_New_Face(library, "GameData/fonts/arial.ttf", 0, &face))
+		std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
+	else
+		std::cout << "Used font: arial.ttf" << std::endl;
+
+	FT_Set_Pixel_Sizes(face, 0, 32);
+}
+
+void renderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, vec3 color)
+{
+	mat4 P = ortho(0.0f, static_cast<float> (windowWidth), 0.0f, static_cast<float> (windowHeight));
+	glMatrixMode(GL_PROJECTION);
+	glLoadMatrixf(value_ptr(P));
+	//glMatrixMode(GL_MODELVIEW);
+	//glLoadMatrixf(value_ptr(V*M));
+
+	std::string::const_iterator c;
+	for (c = text.begin(); c != text.end(); c++)
+	{
+		Character ch = Characters[*c];
+
+		GLfloat xpos = x + ch.bearing.x * scale;
+		GLfloat ypos = y - (ch.size.y - ch.bearing.y) * scale;
+
+		GLfloat w = ch.size.x * scale;
+		GLfloat h = ch.size.y * scale;
+
+		GLfloat vertices[6][3] = {
+			{xpos, ypos + h, 0.0f},
+			{xpos, ypos, 0.0f },
+			{xpos + w, ypos, 0.0f},
+
+			{ xpos + w, ypos, 0.0f },
+			{ xpos + w, ypos + h, 0.0f },
+			{ xpos, ypos + h, 0.0f }			
+		};
+
+		glBindTexture(GL_TEXTURE_2D, ch.textureID);
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glVertexPointer(3, GL_FLOAT, 0, vertices);
+		glTexCoordPointer(2, GL_FLOAT, 0, texVertices);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		glDisableClientState(GL_VERTEX_ARRAY);
+
+		x += (ch.advance >> 6) * scale;
+	}
+}
 
 void mobImage() {
 	std::vector<unsigned char> image;
@@ -88,11 +213,14 @@ void mobImage() {
 		std::cout << "Mob texture didnt loaded\n";
 	glGenTextures(1, &mobTex);
 	glBindTexture(GL_TEXTURE_2D, mobTex);
+
 	glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*)image.data());
 
+	
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }
 
 void turretImage() {
@@ -110,20 +238,22 @@ void turretImage() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	
 }
 
 //field array
 void field()
 {
-	std::ifstream field("GameData/Plansza/level.txt");
+	std::ifstream field("GameData/Plansza/lvl.txt");
 	if (field.good())
 		std::cout << "Map file loaded properly" << std::endl;
 	else
 		std::cout << "Couldnt load map file" << std::endl;;
 
-	std::string row;
-	for (int i = 0; i < 21; i++)
-		for (int j = 0; j < 21; j++)
+	for (int i = 0; i < 20; i++)
+		for (int j = 0; j < 20; j++)
 		{
 			field >> fieldTab[i][j];
 		}
@@ -137,7 +267,7 @@ void increaseLevel()
 	if (deathMobCount == maxMobAlive)
 	{
 		level++;
-		income = pow(income, 1.2);
+		income *= 1.1;
 		
 		camera.buildPhase = true;
 		camera.changeCameraLookAt();
@@ -145,7 +275,27 @@ void increaseLevel()
 		deathMobCount = 0;
 		mobAlive.clear();
 		arrow.clear();
+
+		maxMobAlive++;
+		mobMaxCount++;
+		selectMob();
 	}
+}
+
+void selectMob()
+{
+	srand(time(NULL));
+	mobType = rand() % maxMobType;
+}
+
+bool checkPathRoute()
+{
+	int x = (-pressMouseX + 20) / 2;
+	int z = (pressMouseZ + 20) /2;
+	if (fieldTab[z][x] == 2)
+		return false;
+	else
+		return true;
 }
 
 //special keyboard keys
@@ -195,9 +345,14 @@ void keyboard(unsigned char key, int x, int y)
 
 	if (gamephase == BUILD && (key == 'f' || key == 'F'))
 		buildphase = GHOSTBUILD;
+	else if (gamephase == BUILD && (key == 'u' || key == 'U'))
+		buildphase = UPGRADE;
 	//quit when pushing esc button
 	if (key == 27)
 		exit(1);
+
+	if (key == 'r' || key == 'R')
+		gamestate = GAME;
 	
 	nextFrame();
 }
@@ -210,14 +365,14 @@ void mouse(int button, int state, int x, int z)
 
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP)
 		keypressed = NOTHING;
-	pressMouseX = x;
-	pressMouseZ = z;
+	pressMouseX = -(x/20 - 20);
+	pressMouseZ = z/ 20 - 20;
 }
 
 //mouse movement function
 void mouseMovement(int x, int z)
 {
-	mouseX = x/20 - 20;
+	mouseX = -(x/20 - 20);
 	mouseZ = z/20 - 20;
 }
 
@@ -230,9 +385,11 @@ void init()
 	glEnable(GL_LIGHT0);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
-	loadImage();
+
+	freeTypeLibraryInit();
+	generateTexture();
 	field();
+	mapImage();
 	mobImage();
 	turretImage();
 
@@ -241,19 +398,19 @@ void init()
 }
 
 //load image to graphic card memory
-void loadImage()
+void mapImage()
 {
 	std::vector<unsigned char> image;
 	unsigned width, height;
 	//unsigned error = lodepng::decode(image, width, height, "D:/Polibuda/Semestr IV/Grafika komputerowa i wizualizacja/Tower_defense/GameData/Plansza/fieldTextureNew.png");
-	unsigned error = lodepng::decode(image, width, height, "GameData/Plansza/fieldTextureNew.png");
+	unsigned error = lodepng::decode(image, width, height, "GameData/Plansza/fieldTextureBig.png");
 	if (!error)
 		std::cout << "Minion map texture loaded properly\n";
 	else
 		std::cout << "Minion map texture didnt loaded\n";
 	glGenTextures(1, &minionFieldTex);
 	glBindTexture(GL_TEXTURE_2D, minionFieldTex);
-	glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*) image.data());
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*) image.data());
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -263,22 +420,18 @@ void loadImage()
 void createField(mat4 V, mat4 M)
 {
 	glMatrixMode(GL_MODELVIEW);
+	
 	glLoadMatrixf(glm::value_ptr(V*M));
+	
 	glBindTexture(GL_TEXTURE_2D, minionFieldTex);
-	/*if (gamephase == MINION)
-		glBindTexture(GL_TEXTURE_2D, minionFieldTex);
-	else if (gamephase == BUILD)
-		glBindTexture(GL_TEXTURE_2D, buildFieldTex);*/
 
 	glEnableClientState(GL_VERTEX_ARRAY);
-//	glEnableClientState(GL_COLOR_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glVertexPointer(3, GL_FLOAT, 0, fieldVertices);
 	glColorPointer(3, GL_FLOAT, 0, fieldColors);
 	glTexCoordPointer(2, GL_FLOAT, 0, fieldTextureCoords);
 	glDrawArrays(GL_QUADS, 0, fieldVertexCount);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	//glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
 
@@ -311,6 +464,18 @@ void createArrow(mat4 V, mat4 M, int i)
 	arrow.back().setTurretNumber(i);
 }
 
+void createMob(mat4 V, mat4 M)
+{
+	switch (mobType)
+	{
+		case 0:
+			mobAlive.push_back(NormalMob(V, M, fieldTab));
+			if (level > 1)
+				mobAlive.back().setHealth(level);
+			break;
+	}
+}
+
 //Display function
 void displayFrame()
 {
@@ -321,6 +486,7 @@ void displayFrame()
 	else if (gamestate == GAME_OVER)
 		gameOver();
 	
+	glFlush();
 	glutSwapBuffers();
 	Sleep(20);
 }
@@ -340,7 +506,7 @@ void menu()
 //gameover gamestate
 void gameOver()
 {
-
+	std::cout << "RETRY?" << std::endl;
 }
 
 
@@ -352,9 +518,12 @@ void game()
 	{
 		case MINION:
 		{
-			//if (turret.size()) > 0)
-				//if (turret.back().isGhost == true)
-					//turret.pop_back();
+			glEnable(GL_DEPTH_TEST);
+			if (start)
+			{
+				std::cout << "Gold = " << gold << std::endl;
+				start = false;
+			}
 			MVP();
 			
 			glMatrixMode(GL_PROJECTION);
@@ -370,7 +539,7 @@ void game()
 
 			if (mobAlive.size() + deathMobCount != maxMobAlive && mobAlive.size() == 0)
 				createMob(V, M);
-			else if (mobAlive.size() != maxMobAlive + deathMobCount && mobAlive.back().getTabPosX() != 0)
+			else if (mobAlive.size() + deathMobCount != maxMobAlive && mobAlive.back().getTabPosX() != 0)
 				createMob(V, M);
 
 			if (turret.size() > 0)
@@ -386,7 +555,7 @@ void game()
 												mobAlive[arrow[j].getAttackedMob()].getPosZ());
 						arrow[j].setDistance();
 						arrow[j].drawArrow(V, M);
-						if (arrow[j].getDistanceX() <= 0.5f && arrow[j].getDistanceZ() <= 0.5f)
+						if (arrow[j].getDistanceX() <= 0.5f && arrow[j].getDistanceZ() <= 0.5f && arrow[j].getDistanceY() <= 0.5f)
 						{
 							mobAlive[arrow[j].getAttackedMob()].decreaseHealth(turret[arrow[j].getTurretNumber()].getDamage());
 							arrow.erase(arrow.begin() + j);
@@ -395,39 +564,46 @@ void game()
 								{
 									mobAlive.erase(mobAlive.begin() + i);
 									deathMobCount++;
+									totalMobDied++;
 									gold += static_cast<int> (income);
-									std::cout << "Gold = " << gold << std::endl;
-									
+									std::cout << "Gold = " << gold << std::endl;	
 								}
 						}
-
 					}
 				
 			deleteMob();
 
 			drawMobOnField();
 			drawTurretsOnField();
+
 			increaseLevel();
+			std::string goldString;
+			goldString = std::to_string(gold);
+			renderText("Gold = " + goldString, 25.0f, 750.0f, 1.0f, vec3(0.5f, 0.8f, 0.2f));
 			break;
 		}
 		case BUILD:
 		{
+			glDisable(GL_DEPTH_TEST);
 			MVP();
 			
 			glMatrixMode(GL_PROJECTION);
 			glLoadMatrixf(value_ptr(P));
 			createField(V, M);
 
-			if (buildphase == GHOSTBUILD)
+			if (buildphase == GHOSTBUILD && prevbuildphase != GHOSTBUILD)
 			{
 				if (gold >= turretCost)
+				{
 					ghostBuild(V, M);
+					prevbuildphase = GHOSTBUILD;
+				}
 				else
 					std::cout << "You havent got enough gold!" << std::endl;
 			}
-			//std::cout << "turret number = " << turret.size() << std::endl;
 			if (buildphase == GHOST)
 			{
+				prevbuildphase = GHOST;
 				changeGhostPosition();
 				turret.back().drawGhostTurret(V, M,turretTex);
 				if (keypressed == LEFTKEY)
@@ -438,10 +614,15 @@ void game()
 							if (turret.back().getPosX() != turret[i].getPosX() ||
 								turret.back().getPosZ() != turret[i].getPosZ())
 							{
-								createSolidTurret();
-								gold -= turretCost;
-								std::cout << "Gold = " << gold << std::endl;
-								break;
+								if (checkPathRoute())
+								{
+									createSolidTurret();
+									gold -= turretCost;
+									std::cout << "Gold = " << gold << std::endl;
+									break;
+								}
+								else
+									std::cout << "You cant place turret at minions path." << std::endl;
 							}
 							else
 							{
@@ -451,11 +632,42 @@ void game()
 						}
 					else
 					{
-						createSolidTurret();
-						gold -= turretCost;
-						std::cout << "Gold = " << gold << std::endl;
+						if (checkPathRoute())
+						{
+							createSolidTurret();
+							gold -= turretCost;
+							std::cout << "Gold = " << gold << std::endl;
+						}
+						else
+							std::cout << "You cant place turret at minions path." << std::endl;
 					}
 				}
+			}
+
+			if (buildphase == UPGRADE)
+			{
+				prevbuildphase = UPGRADE;
+				if (keypressed == LEFTKEY)
+					for (int i = 0; i < turret.size(); i++)
+					{
+						if (turret[i].getPosX() == pressMouseX &&
+							turret[i].getPosZ() == pressMouseZ)
+						{
+							if (turret[i].getUpgradeCost() <= gold)
+							{
+								gold -= turret[i].getUpgradeCost();
+								turret[i].upgrade();
+								std::cout << "Turret " << i << " upgraded successfully." << std::endl;
+								std::cout << "Gold = " << gold << std::endl;
+							}
+							else
+								std::cout << "You havent got enough gold." << std::endl;
+						}
+						else
+						{
+							std::cout << "There isnt turret" << std::endl;
+						}
+					}
 			}
 			
 			for (int i = 0; i < turret.size(); i++)
@@ -472,6 +684,7 @@ void game()
 				arrow[i].drawArrow(V, M);
 
 			drawMobOnField();
+			keypressed = NOTHING;
 			break;
 		}
 	}
@@ -484,8 +697,6 @@ void MVP()
 		P = perspective(50.0f, 1.0f, 1.0f, 50.0f);
 	else if (gamephase == BUILD)
 		P = perspective(51.05f, 1.0f, 1.0f, 50.0f);
-	
-	//V = lookAt(vec3(0.0f, 1.0f, 15.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
 
 	V = lookAt(vec3(camera.getPosX(), camera.getPosY(), camera.getPosZ()),
 		vec3(camera.getAtX(), camera.getAtY(), camera.getAtZ()),
@@ -523,44 +734,32 @@ void drawMobOnField()
 {
 	if (mobAlive.size() > 0)
 		for (int i = 0; i < mobAlive.size(); i++)
-			mobAlive[i].drawMob(V, M, fieldTab,mobTex);
+			mobAlive[i].drawMob(V, M, fieldTab ,mobTex);
 }
 
 //creating mobs
-void createMob(mat4 V, mat4 M)
-{
-	mobAlive.push_back(NormalMob(V, M, fieldTab));
-	mobAlive.back().setHealth(level);
-}
 
 //deleting mobs and adding gold
 void deleteMob()
 {
 	for (int i = 0; i < mobAlive.size(); i++)
 	{
-		if (mobAlive[i].getTabPosX() == 20 || mobAlive[i].getTabPosZ() == 20)
+		if (mobAlive[i].getTabPosX() == 19 || mobAlive[i].getTabPosZ() == 19)
 		{
 			mobAlive.erase(mobAlive.begin() + i);
 			deathMobCount++;
+			totalMobDied++;
+			lives--;
+			if (lives == 0)
+				gamestate = GAME_OVER;
 		}
-		/*else if (mobAlive[i].getHealth() <= 0)
-		{
-			mobAlive.erase(mobAlive.begin() + i);
-			for (int j = 0; j < arrow.size(); j++)
-				if (arrow[j].getAttackedMob() == i)
-					arrow.erase(arrow.begin() + j);
-			deathMobCount++;
-			gold = static_cast<int> (income);
-			income = pow(income, 1.2);
-			mobAlive.erase(mobAlive.begin() + arrow[j].getAttackedMob());
-		}*/
 	}
 }
 
 void initializeGLUT(int* pargc, char **argv)
 {
 	glutInit(pargc, argv);
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
+	glutInitDisplayMode(/*GLUT_RGBA |*/ GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowPosition(800, 0);
 	glutInitWindowSize(windowWidth, windowHeight);
 	glutCreateWindow("Tower Defense");
@@ -586,7 +785,7 @@ void initializeGLEW()
 void deleteThings()
 {
 	glDeleteTextures(1, &minionFieldTex);
-	glDeleteTextures(1, &buildFieldTex);
+	//glDeleteTextures(1, &buildFieldTex);
 }
 
 int main(int argc, char** argv)
