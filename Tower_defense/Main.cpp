@@ -243,6 +243,21 @@ void turretImage() {
 	
 }
 
+void faq()
+{
+	std::string string;
+	std::ifstream faq("GameData/Text/FAQ.txt");
+	if (faq.good())
+		while (!faq.eof())
+		{
+			getline(faq, string); 
+			std::cout << string << std::endl;
+		}
+	else
+		std::cout << "FAQ couldnt loaded.";
+	std::cout << std::endl;
+}
+
 //field array
 void field()
 {
@@ -392,6 +407,7 @@ void init()
 	mapImage();
 	mobImage();
 	turretImage();
+	faq();
 
 
 	gamestate = GAME;		//menu isnt create 
