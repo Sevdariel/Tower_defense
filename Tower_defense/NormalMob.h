@@ -12,7 +12,7 @@
 class NormalMob
 {
 	int	healthPoints = 10;													//Mob speed and health
-	float speed = 10.0f;
+	float speed = 1.0f;
 	enum Directions { LEFT, RIGHT, UP, DOWN, NO_DIRECTION, STOP };			//mob moving directions
 	Directions direction = NO_DIRECTION;									//direction variable
 	Directions prevDirection;												//previous direction variable
