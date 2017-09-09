@@ -14,7 +14,7 @@ class Arrow
 {
 	float posX, posY, posZ;
 	float startPosX, startPosY, startPosZ;
-	float flySpeed = 0.05f;
+	float flySpeed = 0.09f;
 	float mobPosX, mobPosY, mobPosZ;
 	float distanceX, distanceZ, distanceY;
 	void move();

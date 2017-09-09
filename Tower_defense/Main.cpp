@@ -579,6 +579,9 @@ void game()
 								if (mobAlive[i].getHealth() <= 0)
 								{
 									mobAlive.erase(mobAlive.begin() + i);
+									for (int k = 0; k < arrow.size(); k++)
+										if (arrow[k].getAttackedMob() == i)
+											arrow.erase(arrow.begin() + k);
 									deathMobCount++;
 									totalMobDied++;
 									gold += static_cast<int> (income);
