@@ -5,10 +5,13 @@ unsigned int fieldVertexCount = 4;
 
 float fieldVertices[] =
 {
+	
 	-20, 0, -20,
 	-20, 0, 20,
 	20, 0, 20,
 	20, 0, -20
+	
+	
 };
 
 float fieldColors[] =
@@ -25,6 +28,7 @@ float fieldTextureCoords[] =
 	1, 1,
 	0, 1,
 	0, 0
+	
 };
 
 #endif

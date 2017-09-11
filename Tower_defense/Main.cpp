@@ -24,6 +24,7 @@
 #include "NormalMob.h"
 #include "FirstTurret.h"
 #include "Arrow.h"
+#include "models.h"
 
 using namespace glm;
 
@@ -40,6 +41,7 @@ void mouseMovement(int x, int y);
 void field();
 void mapImage();
 void turretImage();
+void arrowImage();
 void mobImage();
 void game();
 void menu();
@@ -56,8 +58,10 @@ void createSolidTurret();
 void increaseLevel();
 void selectMob();
 bool checkPathRoute();
+void loadModel(std::string path, BlenderModel& model);
 
-GLuint minionFieldTex, buildFieldTex,mobTex,turretTex;
+
+GLuint minionFieldTex, buildFieldTex,mobTex,turretTex,arrowTex;
 mat4 P, V, M;
 FT_Library library;
 FT_Face face;
@@ -84,6 +88,8 @@ const int turretCost = 50;
 const int maxMobType = 1;
 int mobType = 0;
 bool start = true;
+GLuint nexTex;
+BlenderModel model;
 
 GameState gamestate;
 GamePhase gamephase = MINION;
@@ -108,6 +114,14 @@ GLfloat texVertices[] = {
 	0,0,	0, 1,	1, 1,	
 	1,1,	1, 0,	0,0
 };
+
+void loadModel(std::string path, BlenderModel& model) {
+	bool opened = BlenderModel::loadBlenderModerl(path, &model, true);
+	if (opened)
+		printf("Model: %s\n", model.toString().c_str());
+	else
+		printf("Not opened: %s\n", path.c_str());
+}
 
 void generateTexture()
 {
@@ -206,7 +220,7 @@ void renderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, vec3 colo
 void mobImage() {
 	std::vector<unsigned char> image;
 	unsigned width, height;
-	unsigned error = lodepng::decode(image, width, height, "GameData/Plansza/angryface.png");
+	unsigned error = lodepng::decode(image, width, height, "GameData/Plansza/scaryface.png");
 	if (!error)
 		std::cout << "Mob texture loaded properly\n";
 	else
@@ -395,11 +409,17 @@ void mouseMovement(int x, int z)
 void init()
 {
 	glClearColor(0, 0, 0, 1);
+	
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);
 	glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHT1);
+	glEnable(GL_COLOR_MATERIAL);
+	
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	
 
 	freeTypeLibraryInit();
 	generateTexture();
@@ -407,6 +427,12 @@ void init()
 	mapImage();
 	mobImage();
 	turretImage();
+	arrowImage();
+
+	nexTex = readTexture("GameData/Plansza/gold.png");
+	loadModel("GameData/obj/suzanne1.obj", model);
+	
+
 	faq();
 
 
@@ -432,23 +458,56 @@ void mapImage()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
+void arrowImage() {
+	std::vector<unsigned char> image;
+	unsigned width, height;
+	//unsigned error = lodepng::decode(image, width, height, "D:/Polibuda/Semestr IV/Grafika komputerowa i wizualizacja/Tower_defense/GameData/Plansza/fieldTextureNew.png");
+	unsigned error = lodepng::decode(image, width, height, "GameData/Plansza/moro.png");
+	if (!error)
+		std::cout << "Arrow texture loaded properly\n";
+	else
+		std::cout << "Arrow texture didnt loaded\n";
+	glGenTextures(1, &arrowTex);
+	glBindTexture(GL_TEXTURE_2D, arrowTex);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*)image.data());
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+}
+
 //field creation vertices taken from "Field.h" add textures to field
 void createField(mat4 V, mat4 M)
 {
 	glMatrixMode(GL_MODELVIEW);
 	
 	glLoadMatrixf(glm::value_ptr(V*M));
+	float lightPos0[] = { 0,0,-1,0 };
+	float lightPos1[] = { (-20.0, -0.8, -7.4) };
+	float lightColorAmbient1[] = {1,0,0,1};
+	float lightColor1[] = { 1,0,0,0 };
+	//glLightfv(GL_LIGHT0, GL_POSITION, lightPos0);
+	glLightfv(GL_LIGHT1, GL_POSITION, lightPos1);
+	glLightfv(GL_LIGHT1, GL_AMBIENT, lightColorAmbient1);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, lightColor1);
+	glLightfv(GL_LIGHT1, GL_SPECULAR, lightColor1);
+	//glMatrixMode(GL_MODELVIEW);
+	//glLoadIdentity();
 	
 	glBindTexture(GL_TEXTURE_2D, minionFieldTex);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glEnableClientState(GL_NORMAL_ARRAY);
+	glEnable(GL_NORMALIZE);
+
 	glVertexPointer(3, GL_FLOAT, 0, fieldVertices);
 	glColorPointer(3, GL_FLOAT, 0, fieldColors);
 	glTexCoordPointer(2, GL_FLOAT, 0, fieldTextureCoords);
+	glNormalPointer(GL_FLOAT, 0, fieldVertices);
 	glDrawArrays(GL_QUADS, 0, fieldVertexCount);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_NORMAL_ARRAY);
 }
 
 //creating ghost turret
@@ -529,12 +588,14 @@ void gameOver()
 //game gamestate
 void game()
 {
+	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	switch (gamephase)
 	{
 		case MINION:
 		{
 			glEnable(GL_DEPTH_TEST);
+			glEnable(GL_LIGHTING);
 			if (start)
 			{
 				std::cout << "Gold = " << gold << std::endl;
@@ -544,8 +605,14 @@ void game()
 			
 			glMatrixMode(GL_PROJECTION);
 			glLoadMatrixf(value_ptr(P));
-
+			glMatrixMode(GL_MODELVIEW);
+			glLoadMatrixf(value_ptr(V));
+			glLoadIdentity();
+			
+			
 			createField(V, M);
+			model.draw(nexTex, V, M);
+			
 
 			for (int i = 0; i < mobAlive.size(); i++)
 				mobAlive[i].buildPhase = false;
@@ -579,9 +646,6 @@ void game()
 								if (mobAlive[i].getHealth() <= 0)
 								{
 									mobAlive.erase(mobAlive.begin() + i);
-									for (int k = 0; k < arrow.size(); k++)
-										if (arrow[k].getAttackedMob() == i)
-											arrow.erase(arrow.begin() + k);
 									deathMobCount++;
 									totalMobDied++;
 									gold += static_cast<int> (income);
@@ -599,17 +663,23 @@ void game()
 			std::string goldString;
 			goldString = std::to_string(gold);
 			renderText("Gold = " + goldString, 25.0f, 750.0f, 1.0f, vec3(0.5f, 0.8f, 0.2f));
+			glDisable(GL_LIGHTING);
+			glDisable(GL_DEPTH_TEST);
 			break;
 		}
 		case BUILD:
 		{
-			glDisable(GL_DEPTH_TEST);
+			//glEnable(GL_DEPTH_TEST);
+			//glEnable(GL_LIGHTING);
 			MVP();
 			
 			glMatrixMode(GL_PROJECTION);
 			glLoadMatrixf(value_ptr(P));
+			glMatrixMode(GL_MODELVIEW);
+			glLoadMatrixf(glm::value_ptr(V));
+			
 			createField(V, M);
-
+			model.draw(nexTex, V, M);
 			if (buildphase == GHOSTBUILD && prevbuildphase != GHOSTBUILD)
 			{
 				if (gold >= turretCost)
@@ -704,6 +774,7 @@ void game()
 
 			drawMobOnField();
 			keypressed = NOTHING;
+			//glDisable(GL_DEPTH_TEST);
 			break;
 		}
 	}
@@ -720,6 +791,10 @@ void MVP()
 	V = lookAt(vec3(camera.getPosX(), camera.getPosY(), camera.getPosZ()),
 		vec3(camera.getAtX(), camera.getAtY(), camera.getAtZ()),
 		vec3(camera.getNoseX(), camera.getNoseY(), camera.getNoseZ ()));
+	/*mat4 V = lookAt( //Wylicz macierz widoku
+		vec3(0.0f, 0.0f, -5.0f),
+		vec3(0.0f, 0.0f, 0.0f),
+		vec3(0.0f, 1.0f, 0.0f));*/
 	M = mat4(1.0f);
 }
 

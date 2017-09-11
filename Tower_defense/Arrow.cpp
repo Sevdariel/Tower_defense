@@ -99,13 +99,40 @@ void Arrow::startDrawArrow(mat4 V, mat4 M)
 	M = scale(M, vec3(0.05f, 0.05f, 0.05f));
 	glLoadMatrixf(value_ptr(V*M));
 
+
+	///TEST
+	
 	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
+	//glEnableClientState(GL_COLOR_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glEnableClientState(GL_NORMAL_ARRAY);
+	glEnable(GL_NORMALIZE);
 	glVertexPointer(3, GL_FLOAT, 0, mobCubeVertices);
-	glColorPointer(4, GL_FLOAT, 0, mobCubeColors);
+	glTexCoordPointer(2, GL_FLOAT, 0, mobCubeTex);
+	//glColorPointer(4, GL_FLOAT, 0, mobCubeColors);
+	glNormalPointer(GL_FLOAT, 0, mobCubeVertices);
 	glDrawArrays(GL_QUADS, 0, mobCubeVertexCount);
-	glDisableClientState(GL_COLOR_ARRAY);
+	//glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableClientState(GL_NORMAL_ARRAY);
+
+	/*glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+	glEnableClientState(GL_NORMAL_ARRAY);
+	//glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+	glVertexPointer(4, GL_FLOAT, 0, mobCubeVertices);
+	glColorPointer(4,GL_FLOAT,0,mobCubeColors);
+	glNormalPointer(GL_FLOAT, sizeof(float) * 4, boks);
+	//glTexCoordPointer(2, GL_FLOAT, 0, mobCubeTex);
+
+	glDrawArrays(GL_TRIANGLES, 0, mobCubeVertexCount);
+
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_NORMAL_ARRAY);
+	//glDisableClientState(GL_TEXTURE_COORD_ARRAY);*/
 }
 
 void Arrow::drawArrow(mat4 V, mat4 M)
@@ -117,13 +144,37 @@ void Arrow::drawArrow(mat4 V, mat4 M)
 	M = scale(M, vec3(0.1f, 0.1f, 0.1f));
 	glLoadMatrixf(value_ptr(V*M));
 
-	glEnableClientState(GL_VERTEX_ARRAY);
+	/*glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
-	glVertexPointer(3, GL_FLOAT, 0, mobCubeVertices);
-	glColorPointer(4, GL_FLOAT, 0, mobCubeColors);
-	glDrawArrays(GL_QUADS, 0, mobCubeVertexCount);
-	glDisableClientState(GL_COLOR_ARRAY);
+	glEnableClientState(GL_NORMAL_ARRAY);
+	//glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+	glVertexPointer(4, GL_FLOAT, 0, mobCubeVertices);
+	glColorPointer(4,GL_FLOAT,0,mobCubeColors);
+	glNormalPointer(GL_FLOAT, sizeof(float) * 4, boks);
+	//glTexCoordPointer(2, GL_FLOAT, 0, mobCubeTex);
+
+	glDrawArrays(GL_TRIANGLES, 0, mobCubeVertexCount);
+
 	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_NORMAL_ARRAY);
+	//glDisableClientState(GL_TEXTURE_COORD_ARRAY);*/
+	
+	glEnableClientState(GL_VERTEX_ARRAY);
+	//glEnableClientState(GL_COLOR_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glEnableClientState(GL_NORMAL_ARRAY);
+	glEnable(GL_NORMALIZE);
+	glVertexPointer(3, GL_FLOAT, 0, mobCubeVertices);
+	glTexCoordPointer(2, GL_FLOAT, 0, mobCubeTex);
+	//glColorPointer(4, GL_FLOAT, 0, mobCubeColors);
+	glNormalPointer(GL_FLOAT, 0, mobCubeVertices);
+	glDrawArrays(GL_QUADS, 0, mobCubeVertexCount);
+	//glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableClientState(GL_NORMAL_ARRAY);
 }
 
 float Arrow::getPosX()

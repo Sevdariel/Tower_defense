@@ -11,13 +11,41 @@ void NormalMob::startDrawMob(glm::mat4 V, glm::mat4 M, int fieldTab[20][20])
 	M = scale(M, vec3(0.5f, 0.5f, 0.5f));
 	glLoadMatrixf(value_ptr(V*M));
 
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-	glVertexPointer(3, GL_FLOAT, 0, mobCubeVertices);
-	//glColorPointer(4, GL_FLOAT, 0, mobCubeColors);
-	glDrawArrays(GL_QUADS, 0, mobCubeVertexCount);
-	glDisableClientState(GL_COLOR_ARRAY);
+	/*glEnableClientState(GL_VERTEX_ARRAY);
+	//glEnableClientState(GL_COLOR_ARRAY);
+	glEnableClientState(GL_NORMAL_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+	glVertexPointer(4, GL_FLOAT, 0, mobCubeVertices);
+	//glColorPointer(4,GL_FLOAT,0,colors);
+	glNormalPointer(GL_FLOAT, sizeof(float) * 4, boks);
+	glTexCoordPointer(2, GL_FLOAT, 0, mobCubeTex);
+
+	glDrawArrays(GL_TRIANGLES, 0, mobCubeVertexCount);
+
+
+	
 	glDisableClientState(GL_VERTEX_ARRAY);
+	//glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_NORMAL_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
+	/// TEST
+	*/
+	glEnableClientState(GL_VERTEX_ARRAY);
+	//glEnableClientState(GL_COLOR_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glEnableClientState(GL_NORMAL_ARRAY);
+	glEnable(GL_NORMALIZE);
+	glVertexPointer(3, GL_FLOAT, 0, mobCubeVertices);
+	glTexCoordPointer(2, GL_FLOAT,0, mobCubeTex);
+	//glColorPointer(4, GL_FLOAT, 0, mobCubeColors);
+	glNormalPointer(GL_FLOAT, 0, mobCubeVertices);
+	glDrawArrays(GL_QUADS, 0, mobCubeVertexCount);
+
+	//glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_NORMAL_ARRAY);
 }
 
 void NormalMob::drawMob(glm::mat4 V, glm::mat4 M, int fieldTab[20][20],GLuint tex)
@@ -35,20 +63,46 @@ void NormalMob::drawMob(glm::mat4 V, glm::mat4 M, int fieldTab[20][20],GLuint te
 		glMatrixMode(GL_MODELVIEW);
 		M = translate(M, vec3(posX, posY, posZ));
 		M = scale(M, vec3(0.5f, 0.5f, 0.5f));
+		
 	}
 	glLoadMatrixf(value_ptr(V*M));
 
 	glBindTexture(GL_TEXTURE_2D, tex);
+	/*
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+	glEnableClientState(GL_NORMAL_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+	glVertexPointer(4, GL_FLOAT, 0, mobCubeVertices);
+	//glColorPointer(4,GL_FLOAT,0,colors);
+	glNormalPointer(GL_FLOAT, sizeof(float) * 4, boks);
+	glTexCoordPointer(2, GL_FLOAT, 0, mobCubeTex);
+
+	glDrawArrays(GL_TRIANGLES, 0, mobCubeVertexCount);
+
+	glDisableClientState(GL_VERTEX_ARRAY);
+	//glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_NORMAL_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	*/
+
+	///TEST
 	glEnableClientState(GL_VERTEX_ARRAY);
 	//glEnableClientState(GL_COLOR_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glEnableClientState(GL_NORMAL_ARRAY);
+	glEnable(GL_NORMALIZE);
+
 	glVertexPointer(3, GL_FLOAT, 0, mobCubeVertices);
 	glTexCoordPointer(2, GL_FLOAT, 0, mobCubeTex);
+	glNormalPointer(GL_FLOAT, 0, mobCubeVertices);
 	//glColorPointer(4, GL_FLOAT, 0, mobCubeColors);
 	glDrawArrays(GL_QUADS, 0, mobCubeVertexCount);
 	//glDisableClientState(GL_COLOR_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_NORMAL_ARRAY);
 }
 
 NormalMob::NormalMob(glm::mat4 V, glm::mat4 M, int fieldTab[20][20])

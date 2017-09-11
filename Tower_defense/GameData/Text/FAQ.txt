@@ -1,6 +1,6 @@
 Hello guys!
 This is FAQ of our game. Read it carrefully.
-This is !!!sterowanie!!!
+This is controls
 
 O - camera left rotation
 P - camera right rotation

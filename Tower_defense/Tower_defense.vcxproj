@@ -123,6 +123,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="FirstTurret.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Models.cpp" />
     <ClCompile Include="NormalMob.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -135,6 +136,7 @@
     <ClInclude Include="Field.h" />
     <ClInclude Include="FirstTurret.h" />
     <ClInclude Include="MobVertices.h" />
+    <ClInclude Include="Models.h" />
     <ClInclude Include="NormalMob.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
