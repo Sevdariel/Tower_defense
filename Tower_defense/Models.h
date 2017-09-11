@@ -19,7 +19,6 @@ class BlenderModel {
 
 public:
 	BlenderModel();
-	BlenderModel(std::string path);
 	BlenderModel(std::string path, bool czyTekstura);
 
 	std::string toString();

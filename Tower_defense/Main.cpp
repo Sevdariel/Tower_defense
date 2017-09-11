@@ -180,8 +180,6 @@ void renderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, vec3 colo
 	mat4 P = ortho(0.0f, static_cast<float> (windowWidth), 0.0f, static_cast<float> (windowHeight));
 	glMatrixMode(GL_PROJECTION);
 	glLoadMatrixf(value_ptr(P));
-	//glMatrixMode(GL_MODELVIEW);
-	//glLoadMatrixf(value_ptr(V*M));
 
 	std::string::const_iterator c;
 	for (c = text.begin(); c != text.end(); c++)
@@ -601,6 +599,7 @@ void game()
 				std::cout << "Gold = " << gold << std::endl;
 				start = false;
 			}
+
 			MVP();
 			
 			glMatrixMode(GL_PROJECTION);
@@ -663,14 +662,11 @@ void game()
 			std::string goldString;
 			goldString = std::to_string(gold);
 			renderText("Gold = " + goldString, 25.0f, 750.0f, 1.0f, vec3(0.5f, 0.8f, 0.2f));
-			glDisable(GL_LIGHTING);
-			glDisable(GL_DEPTH_TEST);
 			break;
 		}
 		case BUILD:
 		{
-			//glEnable(GL_DEPTH_TEST);
-			//glEnable(GL_LIGHTING);
+			glDisable(GL_DEPTH_TEST);
 			MVP();
 			
 			glMatrixMode(GL_PROJECTION);
@@ -774,7 +770,7 @@ void game()
 
 			drawMobOnField();
 			keypressed = NOTHING;
-			//glDisable(GL_DEPTH_TEST);
+
 			break;
 		}
 	}
@@ -791,10 +787,7 @@ void MVP()
 	V = lookAt(vec3(camera.getPosX(), camera.getPosY(), camera.getPosZ()),
 		vec3(camera.getAtX(), camera.getAtY(), camera.getAtZ()),
 		vec3(camera.getNoseX(), camera.getNoseY(), camera.getNoseZ ()));
-	/*mat4 V = lookAt( //Wylicz macierz widoku
-		vec3(0.0f, 0.0f, -5.0f),
-		vec3(0.0f, 0.0f, 0.0f),
-		vec3(0.0f, 1.0f, 0.0f));*/
+	
 	M = mat4(1.0f);
 }
 
@@ -831,8 +824,6 @@ void drawMobOnField()
 			mobAlive[i].drawMob(V, M, fieldTab ,mobTex);
 }
 
-//creating mobs
-
 //deleting mobs and adding gold
 void deleteMob()
 {
@@ -853,7 +844,7 @@ void deleteMob()
 void initializeGLUT(int* pargc, char **argv)
 {
 	glutInit(pargc, argv);
-	glutInitDisplayMode(/*GLUT_RGBA |*/ GLUT_DOUBLE | GLUT_DEPTH);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowPosition(800, 0);
 	glutInitWindowSize(windowWidth, windowHeight);
 	glutCreateWindow("Tower Defense");
@@ -879,7 +870,6 @@ void initializeGLEW()
 void deleteThings()
 {
 	glDeleteTextures(1, &minionFieldTex);
-	//glDeleteTextures(1, &buildFieldTex);
 }
 
 int main(int argc, char** argv)

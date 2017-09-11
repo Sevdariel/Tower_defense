@@ -43,11 +43,9 @@ void BlenderModel::draw() {
 
 void BlenderModel::draw(GLuint& tekstura, glm::mat4 V, glm::mat4 M) {
 	if (vertices.size() > 0) {
-		//glm::mat4 M = glm::mat4(1.0);
 		M = glm::translate(M, glm::vec3(-20.0f, -0.8f, -7.4f));
 		M = glm::rotate(M, 90.0f*3.14f / 180.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 		M = glm::rotate(M, 90.0f*3.14f / 180.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-		//M = glm::scale(M, glm::vec3(0.5f, 0.5f, 0.5f));
 		glLoadMatrixf(glm::value_ptr(V*M));
 
 		if (czyTekstura)
