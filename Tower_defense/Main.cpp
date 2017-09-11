@@ -414,10 +414,7 @@ void init()
 	glEnable(GL_LIGHT1);
 	glEnable(GL_COLOR_MATERIAL);
 	
-
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	
 
 	freeTypeLibraryInit();
 	generateTexture();
@@ -483,13 +480,10 @@ void createField(mat4 V, mat4 M)
 	float lightPos1[] = { (-20.0, -0.8, -7.4) };
 	float lightColorAmbient1[] = {1,0,0,1};
 	float lightColor1[] = { 1,0,0,0 };
-	//glLightfv(GL_LIGHT0, GL_POSITION, lightPos0);
 	glLightfv(GL_LIGHT1, GL_POSITION, lightPos1);
 	glLightfv(GL_LIGHT1, GL_AMBIENT, lightColorAmbient1);
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, lightColor1);
 	glLightfv(GL_LIGHT1, GL_SPECULAR, lightColor1);
-	//glMatrixMode(GL_MODELVIEW);
-	//glLoadIdentity();
 	
 	glBindTexture(GL_TEXTURE_2D, minionFieldTex);
 
