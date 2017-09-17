@@ -476,11 +476,17 @@ void createField(mat4 V, mat4 M)
 	glMatrixMode(GL_MODELVIEW);
 	
 	glLoadMatrixf(glm::value_ptr(V*M));
-	float lightPos0[] = { 0,0,-1,0 };
-	float lightPos1[] = { (-20.0, -0.8, -7.4) };
-	float lightColorAmbient1[] = {1,0,0,1};
+	float lightPos0[] = { -30.0, -0.8, -7.4 };
+	float lightPos1[] = { (-30.0, -0.8, -7.4) };
+	float lightColorAmbient0[] = { 0,0.1,0.1,1 };
+	float lightColor0[] = { 0,0.1,0.1,0 };
+	float lightColorAmbient1[] = {0,0,0,1};
 	float lightColor1[] = { 1,0,0,0 };
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPos0);
 	glLightfv(GL_LIGHT1, GL_POSITION, lightPos1);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, lightColorAmbient0);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor0);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, lightColor0);
 	glLightfv(GL_LIGHT1, GL_AMBIENT, lightColorAmbient1);
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, lightColor1);
 	glLightfv(GL_LIGHT1, GL_SPECULAR, lightColor1);
