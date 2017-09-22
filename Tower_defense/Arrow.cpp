@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "Arrow.h"
 #include "ArrowVertices.h"
 #include "MobVertices.h"

@@ -9,25 +9,25 @@
 #include <glm/glm.hpp>
 #include <lodepng.h>
 #include <stdio.h>
-BlenderModel::BlenderModel() {};
+Obj::Obj() {};
 
 
 
-BlenderModel::BlenderModel(std::string path, bool czyTekstura) : path(path), czyTekstura(czyTekstura) {};
+Obj::Obj(std::string path) : path(path) {};
 
-std::string BlenderModel::toString() {
+std::string Obj::toString() {
 	std::ostringstream stream;
-	stream << path << " " << czyTekstura << " " << vertices.size() << " " << uvArray.size() << " " << normals.size();
+	stream << path << " " << vertices.size() << " " << uvArray.size() << " " << normals.size();
 	return stream.str();
 }
 
-void BlenderModel::clear() {
+void Obj::clear() {
 	vertices.clear();
 	uvArray.clear();
 	normals.clear();
 }
 
-void BlenderModel::draw() {
+void Obj::draw() {
 	if (vertices.size() > 0) {
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_NORMAL_ARRAY);
@@ -41,36 +41,31 @@ void BlenderModel::draw() {
 	}
 }
 
-void BlenderModel::draw(GLuint& tekstura, glm::mat4 V, glm::mat4 M) {
+void Obj::draw(glm::mat4 V, glm::mat4 M, GLuint& tekstura,glm::mat4 translacje ) {
 	if (vertices.size() > 0) {
-		M = glm::translate(M, glm::vec3(-20.0f, -0.8f, -7.4f));
-		M = glm::rotate(M, 90.0f*3.14f / 180.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-		M = glm::rotate(M, 90.0f*3.14f / 180.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+
+		M *= translacje;
 		glLoadMatrixf(glm::value_ptr(V*M));
 
-		if (czyTekstura)
-			glBindTexture(GL_TEXTURE_2D, tekstura);
+		glBindTexture(GL_TEXTURE_2D, tekstura);
 
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_NORMAL_ARRAY);
-		if (czyTekstura)
-			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
 		glVertexPointer(3, GL_FLOAT, 0, vertices.data());
 		glNormalPointer(GL_FLOAT, 0, normals.data());
 
-		if (czyTekstura)
-			glTexCoordPointer(2, GL_FLOAT, 0, uvArray.data());
+		glTexCoordPointer(2, GL_FLOAT, 0, uvArray.data());
 
 		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 		glDisableClientState(GL_VERTEX_ARRAY);
 		glDisableClientState(GL_NORMAL_ARRAY);
-		if (czyTekstura)
-			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	}
 }
 
-glm::vec3 BlenderModel::count_normal(glm::vec3 coord1, glm::vec3 coord2, glm::vec3 coord3) {
+glm::vec3 Obj::count_normal(glm::vec3 coord1, glm::vec3 coord2, glm::vec3 coord3) {
 	glm::vec3 va, vb, vr;
 
 	va.x = coord1.x - coord2.x;
@@ -97,8 +92,8 @@ glm::vec3 BlenderModel::count_normal(glm::vec3 coord1, glm::vec3 coord2, glm::ve
 	return norm;
 }
 
-bool BlenderModel::loadBlenderModerl(std::string path, BlenderModel* model, bool czyTekstura) {
-	model->czyTekstura = czyTekstura;
+bool Obj::loadBlender(std::string path, Obj* model) {
+	
 	model->path = path;
 	printf("Loading OBJ file %s...\n", path.c_str());
 	model->clear();
@@ -224,33 +219,4 @@ bool BlenderModel::loadBlenderModerl(std::string path, BlenderModel* model, bool
 	}
 	fclose(file);
 	return true;
-}
-
-
-GLuint readTexture(char* filename) {
-	GLuint tex;
-	glActiveTexture(GL_TEXTURE0);
-
-	//Wczytanie do pamiêci komputera
-	std::vector<unsigned char> image;  //Alokuj wektor do wczytania obrazka
-	unsigned width, height;   //Zmienne do których wczytamy wymiary obrazka
-							  //Wczytaj obrazek
-	unsigned error = lodepng::decode(image, width, height, filename);
-	if (error == 0) {
-		printf("Load texture: %s\n", filename);
-		//Import do pamiêci karty graficznej
-		glGenTextures(1, &tex); //Zainicjuj jeden uchwyt
-		glBindTexture(GL_TEXTURE_2D, tex); //Uaktywnij uchwyt
-										   //Wczytaj obrazek do pamiêci KG skojarzonej z uchwytem
-		glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0,
-			GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*)image.data());
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	}
-	else {
-		printf("Not oppened texture: %s\n", filename);
-	}
-
-	return tex;
 }

@@ -30,7 +30,7 @@
     <ClCompile Include="Arrow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="D:\Polibuda\Semestr IV\Grafika komputerowa i wizualizacja\Tower_defense\Tower_defense\..\..\lib\native\src\lodepng.cpp">
+    <ClCompile Include="C:\Users\Karol\Source\Repos\Tower_defense2\Tower_defense\..\..\lib\native\src\lodepng.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Models.cpp">

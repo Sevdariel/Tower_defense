@@ -1,5 +1,6 @@
 //#define GLM_FORCE_RADIANS
 
+#define _CRT_SECURE_NO_WARNINGS
 #include <Windows.h>
 #include "GL\glew.h"
 #include "GL\glut.h"
@@ -40,10 +41,10 @@ void mouse(int button, int state, int x, int y);
 void mouseMovement(int x, int y);
 void field();
 void mapImage();
-void turretImage();
-void arrowImage();
-void mobImage();
-void game();
+//void turretImage();
+//void arrowImage();
+//void mobImage();
+void game(float jump);
 void menu();
 void gameOver();
 void createMob(mat4 V, mat4 M);
@@ -58,7 +59,8 @@ void createSolidTurret();
 void increaseLevel();
 void selectMob();
 bool checkPathRoute();
-void loadModel(std::string path, BlenderModel& model);
+void imageLoad(char *path, std::string type, GLuint &tex);
+void loadModel(std::string path, Obj& model);
 
 
 GLuint minionFieldTex, buildFieldTex,mobTex,turretTex,arrowTex;
@@ -86,10 +88,13 @@ int lives = 50;
 float income = 5;
 const int turretCost = 50;
 const int maxMobType = 1;
+float jump = -3.5f;
 int mobType = 0;
 bool start = true;
 GLuint nexTex;
-BlenderModel model;
+GLuint pointTex;
+Obj monkeyModel;
+Obj pointerModel;
 
 GameState gamestate;
 GamePhase gamephase = MINION;
@@ -98,6 +103,10 @@ BuildPhase prevbuildphase = buildphase;
 KeyPressed keypressed = NOTHING;
 Camera camera;
 NormalMob *normalMob;
+
+glm::mat4 monkeyTranslation;
+glm::mat4 pointerTranslation;
+
 
 int fieldTab[20][20];
 
@@ -115,8 +124,8 @@ GLfloat texVertices[] = {
 	1,1,	1, 0,	0,0
 };
 
-void loadModel(std::string path, BlenderModel& model) {
-	bool opened = BlenderModel::loadBlenderModerl(path, &model, true);
+void loadModel(std::string path, Obj& model) {
+	bool opened = Obj::loadBlender(path, &model);
 	if (opened)
 		printf("Model: %s\n", model.toString().c_str());
 	else
@@ -215,44 +224,25 @@ void renderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, vec3 colo
 	}
 }
 
-void mobImage() {
+void imageLoad(char *path, std::string type, GLuint &tex) {
 	std::vector<unsigned char> image;
 	unsigned width, height;
-	unsigned error = lodepng::decode(image, width, height, "GameData/Plansza/scaryface.png");
+	unsigned error = lodepng::decode(image, width, height, path);
 	if (!error)
-		std::cout << "Mob texture loaded properly\n";
+		std::cout << type + " texture loaded properly\n";
 	else
-		std::cout << "Mob texture didnt loaded\n";
-	glGenTextures(1, &mobTex);
-	glBindTexture(GL_TEXTURE_2D, mobTex);
+		std::cout << type + " texture didnt loaded\n";
+	glGenTextures(1, &tex);
+	glBindTexture(GL_TEXTURE_2D, tex);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*)image.data());
 
-	
+
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-}
 
-void turretImage() {
-	std::vector<unsigned char> image;
-	unsigned width, height;
-	unsigned error = lodepng::decode(image, width, height, "GameData/Plansza/turretface.png");
-	if (!error)
-		std::cout << "Turret texture loaded properly\n";
-	else
-		std::cout << "Turret texture didnt loaded\n";
-	glGenTextures(1, &turretTex);
-	glBindTexture(GL_TEXTURE_2D, turretTex);
-	glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*)image.data());
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	
 }
 
 void faq()
@@ -420,12 +410,19 @@ void init()
 	generateTexture();
 	field();
 	mapImage();
-	mobImage();
-	turretImage();
-	arrowImage();
+	imageLoad("GameData/Plansza/scaryface.png","Mob",mobTex);
+	
+	imageLoad("GameData/Plansza/turretface.png", "Turret", turretTex);
+	
+	imageLoad("GameData/Plansza/moro.png", "Arrow", arrowTex);
+	
 
-	nexTex = readTexture("GameData/Plansza/gold.png");
-	loadModel("GameData/obj/suzanne1.obj", model);
+	
+	imageLoad("GameData/Plansza/gold.png", "Monkey", nexTex);
+	//imageLoad("GameData/Plansza/diamond.png", "Pointer", pointTex);
+	imageLoad("GameData/Plansza/green.png", "Pointer", pointTex);
+	loadModel("GameData/obj/suzanne1.obj", monkeyModel);
+	loadModel("GameData/obj/point.obj", pointerModel);
 	
 
 	faq();
@@ -453,22 +450,7 @@ void mapImage()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
-void arrowImage() {
-	std::vector<unsigned char> image;
-	unsigned width, height;
-	//unsigned error = lodepng::decode(image, width, height, "D:/Polibuda/Semestr IV/Grafika komputerowa i wizualizacja/Tower_defense/GameData/Plansza/fieldTextureNew.png");
-	unsigned error = lodepng::decode(image, width, height, "GameData/Plansza/moro.png");
-	if (!error)
-		std::cout << "Arrow texture loaded properly\n";
-	else
-		std::cout << "Arrow texture didnt loaded\n";
-	glGenTextures(1, &arrowTex);
-	glBindTexture(GL_TEXTURE_2D, arrowTex);
-	glTexImage2D(GL_TEXTURE_2D, 0, 3, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*)image.data());
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-}
 
 //field creation vertices taken from "Field.h" add textures to field
 void createField(mat4 V, mat4 M)
@@ -477,11 +459,14 @@ void createField(mat4 V, mat4 M)
 	
 	glLoadMatrixf(glm::value_ptr(V*M));
 	float lightPos0[] = { 30.0, -0.8, -7.4 };
-	float lightPos1[] = { (-30.0, -0.8, -7.4) };
-	float lightColorAmbient0[] = { 0,0.1,0.1,1 };
-	float lightColor0[] = { 0,0.1,0.1,0 };
-	float lightColorAmbient1[] = {0,0,0,1};
-	float lightColor1[] = { 1,0,0,0 };
+	float lightPos1[] = { (-20.0f, -6.0f, -7.4f) }; // na pozycji malpy
+	float lightColorAmbient1[] = { 1,0.,1.0,1.0 }; // na pozycji malpy
+	float lightColor1[] = { 1.0,1.0,1.0,0 }; //na pozycji malpy
+	float lightColorAmbient0[] = {0,0,0,0};
+	float lightColor0[] = { 0,0,0,0 };
+	//float lightColorAmbient0[] = {0,1,0,0};
+	//float lightColor0[] = { 0,1,0,0 };
+
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPos0);
 	glLightfv(GL_LIGHT1, GL_POSITION, lightPos1);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, lightColorAmbient0);
@@ -548,14 +533,28 @@ void createMob(mat4 V, mat4 M)
 			break;
 	}
 }
-
+bool kierunek = false;
 //Display function
 void displayFrame()
 {
+	
 	if (gamestate == MENU)
 		menu();
-	else if (gamestate == GAME)
-		game();
+	else if (gamestate == GAME) {
+		if (jump < -4.0f) {
+			//jump -= 0.005f;
+			kierunek = true;
+		}
+		if (jump > -3.0f) {
+			kierunek = false;
+		}
+		if(kierunek)
+			jump += 0.025f;
+		else
+			jump -= 0.025f;
+		//std::cout << "kierunek: " << kierunek << std::endl;
+		game(jump);
+	}
 	else if (gamestate == GAME_OVER)
 		gameOver();
 	
@@ -584,8 +583,20 @@ void gameOver()
 
 
 //game gamestate
-void game()
+void game(float jump)
 {
+	//ustawienie malpy na mapie
+	monkeyTranslation = glm::mat4(1.0f);
+	monkeyTranslation = glm::translate(monkeyTranslation, glm::vec3(-20.0f, -0.8f, -7.4f));
+	monkeyTranslation = glm::rotate(monkeyTranslation, 90.0f*3.14f / 180.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+	monkeyTranslation = glm::rotate(monkeyTranslation, 90.0f*3.14f / 180.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+
+	//ustawienie znacznika na mapie
+	
+	//jump -= 0.1;
+	pointerTranslation = glm::mat4(1.0f);
+	pointerTranslation = glm::translate(pointerTranslation, glm::vec3(-20.0f, jump, -7.4f));
+	pointerTranslation = glm::scale(pointerTranslation, glm::vec3(0.3f, 0.3f, 0.3f));
 	
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	switch (gamephase)
@@ -610,7 +621,9 @@ void game()
 			
 			
 			createField(V, M);
-			model.draw(nexTex, V, M);
+			
+			monkeyModel.draw(V, M, nexTex,monkeyTranslation);
+			pointerModel.draw(V, M, pointTex, pointerTranslation);
 			
 
 			for (int i = 0; i < mobAlive.size(); i++)
@@ -675,7 +688,8 @@ void game()
 			glLoadMatrixf(glm::value_ptr(V));
 			
 			createField(V, M);
-			model.draw(nexTex, V, M);
+			monkeyModel.draw(V, M, nexTex,monkeyTranslation);
+			pointerModel.draw(V, M, pointTex,pointerTranslation);
 			if (buildphase == GHOSTBUILD && prevbuildphase != GHOSTBUILD)
 			{
 				if (gold >= turretCost)
