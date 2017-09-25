@@ -45,7 +45,6 @@ void mapImage();
 //void arrowImage();
 //void mobImage();
 void game();
-
 void menu();
 void gameOver();
 void createMob(mat4 V, mat4 M);
@@ -58,6 +57,8 @@ void ghostBuild(mat4 V, mat4 M);
 void changeGhostPosition();
 void createSolidTurret();
 void increaseLevel();
+void lightInit();
+void diamondMove();
 void selectMob();
 bool checkPathRoute();
 void imageLoad(char *path, std::string type, GLuint &tex);
@@ -395,6 +396,17 @@ void mouseMovement(int x, int z)
 	mouseZ = z/20 - 20;
 }
 
+void filesLoad()
+{
+	imageLoad("GameData/Plansza/scaryface.png", "Mob", mobTex);
+	imageLoad("GameData/Plansza/turretface.png", "Turret", turretTex);
+	imageLoad("GameData/Plansza/moro.png", "Arrow", arrowTex);
+	imageLoad("GameData/Plansza/gold.png", "Monkey", nexTex);
+	imageLoad("GameData/Plansza/green.png", "Pointer", pointTex);
+	loadModel("GameData/obj/suzanne1.obj", monkeyModel);
+	loadModel("GameData/obj/point.obj", pointerModel);
+}
+
 //initialization function
 void init()
 {
@@ -412,24 +424,10 @@ void init()
 	generateTexture();
 	field();
 	mapImage();
-	imageLoad("GameData/Plansza/scaryface.png","Mob",mobTex);
-	
-	imageLoad("GameData/Plansza/turretface.png", "Turret", turretTex);
-	
-	imageLoad("GameData/Plansza/moro.png", "Arrow", arrowTex);
-	
-
-	
-	imageLoad("GameData/Plansza/gold.png", "Monkey", nexTex);
-	//imageLoad("GameData/Plansza/diamond.png", "Pointer", pointTex);
-	imageLoad("GameData/Plansza/green.png", "Pointer", pointTex);
-	loadModel("GameData/obj/suzanne1.obj", monkeyModel);
-	loadModel("GameData/obj/point.obj", pointerModel);
-	
-
+	lightInit();
+	filesLoad();
 	faq();
-
-
+	
 	gamestate = GAME;		//menu isnt create 
 }
 
@@ -452,22 +450,14 @@ void mapImage()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
-
-
-//field creation vertices taken from "Field.h" add textures to field
-void createField(mat4 V, mat4 M)
+void lightInit()
 {
-	glMatrixMode(GL_MODELVIEW);
-	
-	glLoadMatrixf(glm::value_ptr(V*M));
 	float lightPos0[] = { 30.0, -0.8, -7.4 };
 	float lightPos1[] = { (-20.0f, -6.0f, -7.4f) }; // na pozycji malpy
 	float lightColorAmbient1[] = { 1,0.,1.0,1.0 }; // na pozycji malpy
 	float lightColor1[] = { 1.0,1.0,1.0,0 }; //na pozycji malpy
-	float lightColorAmbient0[] = {0,0,0,0};
+	float lightColorAmbient0[] = { 0,0,0,0 };
 	float lightColor0[] = { 0,0,0,0 };
-	//float lightColorAmbient0[] = {0,1,0,0};
-	//float lightColor0[] = { 0,1,0,0 };
 
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPos0);
 	glLightfv(GL_LIGHT1, GL_POSITION, lightPos1);
@@ -477,6 +467,14 @@ void createField(mat4 V, mat4 M)
 	glLightfv(GL_LIGHT1, GL_AMBIENT, lightColorAmbient1);
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, lightColor1);
 	glLightfv(GL_LIGHT1, GL_SPECULAR, lightColor1);
+}
+
+//field creation vertices taken from "Field.h" add textures to field
+void createField(mat4 V, mat4 M)
+{
+	glMatrixMode(GL_MODELVIEW);
+	
+	glLoadMatrixf(glm::value_ptr(V*M));
 	
 	glBindTexture(GL_TEXTURE_2D, minionFieldTex);
 
@@ -571,8 +569,7 @@ void gameOver()
 	std::cout << "RETRY? If Yes press \"R\" if no ESC" << std::endl;
 }
 
-
-void game()
+void diamondMove()
 {
 	if (jump < -4.0f) {
 		jump -= 0.005f;
@@ -585,18 +582,29 @@ void game()
 		jump += 0.025f;
 	else
 		jump -= 0.025f;
+}
 
-	//ustawienie malpy na mapie
+void monkeyPosition()
+{
 	monkeyTranslation = glm::mat4(1.0f);
 	monkeyTranslation = glm::translate(monkeyTranslation, glm::vec3(-20.0f, -0.8f, -7.4f));
 	monkeyTranslation = glm::rotate(monkeyTranslation, 90.0f*3.14f / 180.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 	monkeyTranslation = glm::rotate(monkeyTranslation, 90.0f*3.14f / 180.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+}
 
-	//ustawienie znacznika na mapie
-
+void diamondPosition()
+{
 	pointerTranslation = glm::mat4(1.0f);
 	pointerTranslation = glm::translate(pointerTranslation, glm::vec3(-20.0f, jump, -7.4f));
 	pointerTranslation = glm::scale(pointerTranslation, glm::vec3(0.3f, 0.3f, 0.3f));
+}
+
+void game()
+{
+	diamondMove();
+
+	monkeyPosition();
+	diamondPosition();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	switch (gamephase)
@@ -605,21 +613,22 @@ void game()
 		{
 			glEnable(GL_DEPTH_TEST);
 			glEnable(GL_LIGHTING);
+
+
+			if (turret.size() > 0)
+				if (turret.back().isGhost == true)
+					turret.pop_back();
+
+			MVP();
+
 			if (start)
 			{
 				std::cout << "Gold = " << gold << std::endl;
 				std::cout << "Lives = " << lives << std::endl;
+				gamephase = BUILD;
+				changeLookAt();
 				start = false;
 			}
-
-			if (turret.size() > 0)
-				if (turret.back().isGhost == true)
-				{
-					std::cout << "kappa";
-					turret.pop_back();
-				}
-
-			MVP();
 
 			glMatrixMode(GL_PROJECTION);
 			glLoadMatrixf(value_ptr(P));
@@ -688,6 +697,20 @@ void game()
 		{
 			glDisable(GL_DEPTH_TEST);
 			MVP();
+
+			if (camera.start == true)
+			{
+				std::cout << "posX = " << camera.getPosX() << std::endl;
+				std::cout << "posY = " << camera.getPosY() << std::endl;
+				std::cout << "posZ = " << camera.getPosZ() << std::endl;
+				std::cout << "atX = " << camera.getAtX() << std::endl;
+				std::cout << "atY = " << camera.getAtY() << std::endl;
+				std::cout << "atZ = " << camera.getAtZ() << std::endl;
+				std::cout << "noseX = " << camera.getNoseX() << std::endl;
+				std::cout << "noseY = " << camera.getNoseY() << std::endl;
+				std::cout << "noseZ = " << camera.getNoseZ() << std::endl;
+				camera.start = false;
+			}
 
 			glMatrixMode(GL_PROJECTION);
 			glLoadMatrixf(value_ptr(P));

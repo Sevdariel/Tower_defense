@@ -43,6 +43,7 @@ class Camera
 		void changeCameraLookAt();						//changing camera position between MINION and BUILD phases
 		
 		bool buildPhase;								//build phase flag
+		bool start;
 };
 
 #endif
