@@ -122,7 +122,7 @@ void Arrow::drawArrow(mat4 V, mat4 M)
 		move();
 	glMatrixMode(GL_MODELVIEW);
 	M = translate(M, vec3(posX, posY, posZ));
-	M = scale(M, vec3(0.1f, 0.1f, 0.1f));
+	M = scale(M, vec3(0.05f, 0.05f, 0.05f));
 	glLoadMatrixf(value_ptr(V*M));
 	
 	glEnableClientState(GL_VERTEX_ARRAY);

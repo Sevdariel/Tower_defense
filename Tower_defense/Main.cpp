@@ -349,12 +349,12 @@ void keyboard(unsigned char key, int x, int y)
 	if (key == 's' || key == 'S')
 		camera.startPos();
 
-	if (key == 'b' || key == 'B')
+	if (gamephase != BUILD && (key == 'b' || key == 'B'))
 	{
 		gamephase = BUILD;
 		changeLookAt();
 	}
-	else if (key == 'm' || key == 'M')
+	else if (gamephase != MINION && (key == 'm' || key == 'M'))
 	{
 		gamephase = MINION;
 		changeLookAt();
@@ -368,7 +368,7 @@ void keyboard(unsigned char key, int x, int y)
 	if (key == 27)
 		exit(1);
 
-	if (key == 'r' || key == 'R')
+	if (gamestate == GAME_OVER && (key == 'r' || key == 'R'))
 		gamestate = GAME;
 	
 	nextFrame();
