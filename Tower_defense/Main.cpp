@@ -567,8 +567,9 @@ void menu()
 //gameover gamestate
 void gameOver()
 {
-	std::cout << "RETRY?" << std::endl;
+	std::cout << "RETRY? If Yes press \"R\" if no ESC" << std::endl;
 }
+
 
 void game()
 {
@@ -592,7 +593,6 @@ void game()
 
 	//ustawienie znacznika na mapie
 
-	//jump -= 0.1;
 	pointerTranslation = glm::mat4(1.0f);
 	pointerTranslation = glm::translate(pointerTranslation, glm::vec3(-20.0f, jump, -7.4f));
 	pointerTranslation = glm::scale(pointerTranslation, glm::vec3(0.3f, 0.3f, 0.3f));
@@ -681,6 +681,11 @@ void game()
 		{
 			glDisable(GL_DEPTH_TEST);
 			MVP();
+
+			glMatrixMode(GL_PROJECTION);
+			glLoadMatrixf(value_ptr(P));
+			glMatrixMode(GL_MODELVIEW);
+			glLoadMatrixf(glm::value_ptr(V));
 
 			createField(V, M);
 			monkeyModel.draw(V, M, nexTex, monkeyTranslation);
