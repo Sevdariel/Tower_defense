@@ -44,7 +44,8 @@ void mapImage();
 //void turretImage();
 //void arrowImage();
 //void mobImage();
-void game(float jump);
+void game();
+
 void menu();
 void gameOver();
 void createMob(mat4 V, mat4 M);
@@ -224,7 +225,8 @@ void renderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, vec3 colo
 	}
 }
 
-void imageLoad(char *path, std::string type, GLuint &tex) {
+void imageLoad(char *path, std::string type, GLuint &tex) 
+{
 	std::vector<unsigned char> image;
 	unsigned width, height;
 	unsigned error = lodepng::decode(image, width, height, path);
@@ -540,21 +542,8 @@ void displayFrame()
 	
 	if (gamestate == MENU)
 		menu();
-	else if (gamestate == GAME) {
-		if (jump < -4.0f) {
-			//jump -= 0.005f;
-			kierunek = true;
-		}
-		if (jump > -3.0f) {
-			kierunek = false;
-		}
-		if(kierunek)
-			jump += 0.025f;
-		else
-			jump -= 0.025f;
-		//std::cout << "kierunek: " << kierunek << std::endl;
-		game(jump);
-	}
+	else if (gamestate == GAME)
+		game();
 	else if (gamestate == GAME_OVER)
 		gameOver();
 	
@@ -581,10 +570,20 @@ void gameOver()
 	std::cout << "RETRY?" << std::endl;
 }
 
-
-//game gamestate
-void game(float jump)
+void game()
 {
+	if (jump < -4.0f) {
+		jump -= 0.005f;
+		kierunek = true;
+	}
+	if (jump > -3.0f) {
+		kierunek = false;
+	}
+	if (kierunek)
+		jump += 0.025f;
+	else
+		jump -= 0.025f;
+
 	//ustawienie malpy na mapie
 	monkeyTranslation = glm::mat4(1.0f);
 	monkeyTranslation = glm::translate(monkeyTranslation, glm::vec3(-20.0f, -0.8f, -7.4f));
@@ -592,12 +591,12 @@ void game(float jump)
 	monkeyTranslation = glm::rotate(monkeyTranslation, 90.0f*3.14f / 180.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 
 	//ustawienie znacznika na mapie
-	
+
 	//jump -= 0.1;
 	pointerTranslation = glm::mat4(1.0f);
 	pointerTranslation = glm::translate(pointerTranslation, glm::vec3(-20.0f, jump, -7.4f));
 	pointerTranslation = glm::scale(pointerTranslation, glm::vec3(0.3f, 0.3f, 0.3f));
-	
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	switch (gamephase)
 	{
@@ -608,23 +607,24 @@ void game(float jump)
 			if (start)
 			{
 				std::cout << "Gold = " << gold << std::endl;
+				std::cout << "Lives = " << lives << std::endl;
+				//gamephase = BUILD;
 				start = false;
 			}
 
 			MVP();
-			
+
 			glMatrixMode(GL_PROJECTION);
 			glLoadMatrixf(value_ptr(P));
 			glMatrixMode(GL_MODELVIEW);
 			glLoadMatrixf(value_ptr(V));
 			glLoadIdentity();
-			
-			
+
 			createField(V, M);
-			
-			monkeyModel.draw(V, M, nexTex,monkeyTranslation);
+
+			monkeyModel.draw(V, M, nexTex, monkeyTranslation);
 			pointerModel.draw(V, M, pointTex, pointerTranslation);
-			
+
 
 			for (int i = 0; i < mobAlive.size(); i++)
 				mobAlive[i].buildPhase = false;
@@ -643,29 +643,29 @@ void game(float jump)
 						createArrow(V, M, i);
 
 			if (arrow.size() > 0)
-					for (int j = 0; j < arrow.size(); j++)
+				for (int j = 0; j < arrow.size(); j++)
+				{
+					arrow[j].setMobPosition(mobAlive[arrow[j].getAttackedMob()].getPosX(),
+											mobAlive[arrow[j].getAttackedMob()].getPosY(),
+											mobAlive[arrow[j].getAttackedMob()].getPosZ());
+					arrow[j].setDistance();
+					arrow[j].drawArrow(V, M);
+					if (arrow[j].getDistanceX() <= 0.5f && arrow[j].getDistanceZ() <= 0.5f && arrow[j].getDistanceY() <= 0.5f)
 					{
-						arrow[j].setMobPosition(mobAlive[arrow[j].getAttackedMob()].getPosX(),
-												mobAlive[arrow[j].getAttackedMob()].getPosY(),
-												mobAlive[arrow[j].getAttackedMob()].getPosZ());
-						arrow[j].setDistance();
-						arrow[j].drawArrow(V, M);
-						if (arrow[j].getDistanceX() <= 0.5f && arrow[j].getDistanceZ() <= 0.5f && arrow[j].getDistanceY() <= 0.5f)
-						{
-							mobAlive[arrow[j].getAttackedMob()].decreaseHealth(turret[arrow[j].getTurretNumber()].getDamage());
-							arrow.erase(arrow.begin() + j);
-							for (int i = 0; i < mobAlive.size(); i++)
-								if (mobAlive[i].getHealth() <= 0)
-								{
-									mobAlive.erase(mobAlive.begin() + i);
-									deathMobCount++;
-									totalMobDied++;
-									gold += static_cast<int> (income);
-									std::cout << "Gold = " << gold << std::endl;	
-								}
-						}
+						mobAlive[arrow[j].getAttackedMob()].decreaseHealth(turret[arrow[j].getTurretNumber()].getDamage());
+						arrow.erase(arrow.begin() + j);
+						for (int i = 0; i < mobAlive.size(); i++)
+							if (mobAlive[i].getHealth() <= 0)
+							{
+								mobAlive.erase(mobAlive.begin() + i);
+								deathMobCount++;
+								totalMobDied++;
+								gold += static_cast<int> (income);
+								std::cout << "Gold = " << gold << std::endl;
+							}
 					}
-				
+				}
+
 			deleteMob();
 
 			drawMobOnField();
@@ -681,15 +681,11 @@ void game(float jump)
 		{
 			glDisable(GL_DEPTH_TEST);
 			MVP();
-			
-			glMatrixMode(GL_PROJECTION);
-			glLoadMatrixf(value_ptr(P));
-			glMatrixMode(GL_MODELVIEW);
-			glLoadMatrixf(glm::value_ptr(V));
-			
+
 			createField(V, M);
-			monkeyModel.draw(V, M, nexTex,monkeyTranslation);
-			pointerModel.draw(V, M, pointTex,pointerTranslation);
+			monkeyModel.draw(V, M, nexTex, monkeyTranslation);
+			pointerModel.draw(V, M, pointTex, pointerTranslation);
+	
 			if (buildphase == GHOSTBUILD && prevbuildphase != GHOSTBUILD)
 			{
 				if (gold >= turretCost)
@@ -698,13 +694,14 @@ void game(float jump)
 					prevbuildphase = GHOSTBUILD;
 				}
 				else
-					std::cout << "You havent got enough gold!" << std::endl;
+						std::cout << "You havent got enough gold!" << std::endl;
 			}
+		
 			if (buildphase == GHOST)
 			{
 				prevbuildphase = GHOST;
 				changeGhostPosition();
-				turret.back().drawGhostTurret(V, M,turretTex);
+				turret.back().drawGhostTurret(V, M, turretTex);
 				if (keypressed == LEFTKEY)
 				{
 					if (turret.size() > 1)
@@ -768,10 +765,10 @@ void game(float jump)
 						}
 					}
 			}
-			
+
 			for (int i = 0; i < turret.size(); i++)
 				if (turret[i].isGhost == false)
-					turret[i].drawSolidTurret(V, M, mobAlive,turretTex);
+					turret[i].drawSolidTurret(V, M, mobAlive, turretTex);
 
 			for (int i = 0; i < arrow.size(); i++)
 				arrow[i].buildPhase = true;
@@ -784,11 +781,12 @@ void game(float jump)
 
 			drawMobOnField();
 			keypressed = NOTHING;
-
+	
 			break;
 		}
 	}
 }
+
 
 //init perspective, look at and and model view
 void MVP()
