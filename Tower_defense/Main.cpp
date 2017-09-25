@@ -500,6 +500,7 @@ void ghostBuild(mat4 V, mat4 M)
 {
 	turret.push_back(FirstTurret(V, M,turretTex));
 	changeGhostPosition();
+	turret.back().isGhost = true;
 	buildphase = GHOST;
 }
 
@@ -608,9 +609,15 @@ void game()
 			{
 				std::cout << "Gold = " << gold << std::endl;
 				std::cout << "Lives = " << lives << std::endl;
-				//gamephase = BUILD;
 				start = false;
 			}
+
+			if (turret.size() > 0)
+				if (turret.back().isGhost == true)
+				{
+					std::cout << "kappa";
+					turret.pop_back();
+				}
 
 			MVP();
 
@@ -743,6 +750,14 @@ void game()
 							std::cout << "You cant place turret at minions path." << std::endl;
 					}
 				}
+			}
+
+			if (turret.size() > 0)
+			{
+				if (turret.back().isGhost == true)
+					std::cout << "turret.back().isGhost = true" << std::endl;
+				else
+					std::cout << "turret.back().isGhost = false" << std::endl;
 			}
 
 			if (buildphase == UPGRADE)
